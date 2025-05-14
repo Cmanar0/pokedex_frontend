@@ -1,84 +1,82 @@
-import { defineStore } from 'pinia'
-import { login as apiLogin, logout as apiLogout, checkAuth } from '../api/auth'
+import { defineStore } from 'pinia';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  checkAuth,
+  getCSRFToken as apiGetCSRFToken,
+} from '../api/auth';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
     user: null,
     loading: false,
-    error: null
+    error: null,
   }),
 
   getters: {
     isLoggedIn: (state) => state.isAuthenticated,
     currentUser: (state) => state.user,
     authError: (state) => state.error,
-    isLoading: (state) => state.loading
+    isLoading: (state) => state.loading,
   },
 
   actions: {
-    async initializeAuth() {
-      this.loading = true
+    async getCSRFToken() {
       try {
-        const response = await checkAuth()
-        if (response.ok) {
-          const userData = await response.json()
-          this.isAuthenticated = true
-          this.user = userData
-        } else {
-          this.isAuthenticated = false
-          this.user = null
-        }
+        await apiGetCSRFToken();
       } catch (error) {
-        console.error('Auth initialization error:', error)
-        this.isAuthenticated = false
-        this.user = null
+        console.error('Failed to get CSRF token:', error);
+      }
+    },
+
+    async initializeAuth() {
+      this.loading = true;
+      try {
+        const response = await checkAuth();
+        this.isAuthenticated = true;
+        this.user = response.user;
+      } catch (error) {
+        this.isAuthenticated = false;
+        this.user = null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     async login(username, password) {
-      this.loading = true
-      this.error = null
+      this.loading = true;
+      this.error = null;
       try {
-        const response = await apiLogin(username, password)
-        if (response.ok) {
-          const userData = await response.json()
-          this.isAuthenticated = true
-          this.user = userData
-          return true
-        } else {
-          const errorData = await response.json()
-          this.error = errorData.message || 'Login failed'
-          return false
-        }
+        await this.getCSRFToken();
+        const response = await apiLogin({ username, password });
+        this.isAuthenticated = true;
+        this.user = response.user || { username }; // adjust based on backend
+        return true;
       } catch (error) {
-        console.error('Login error:', error)
-        this.error = 'Network error occurred'
-        return false
+        this.error = error.message || 'Login failed';
+        return false;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     async logout() {
-      this.loading = true
+      this.loading = true;
       try {
-        await apiLogout()
-        this.isAuthenticated = false
-        this.user = null
-        this.error = null
+        await apiLogout();
+        this.isAuthenticated = false;
+        this.user = null;
+        this.error = null;
       } catch (error) {
-        console.error('Logout error:', error)
-        this.error = 'Logout failed'
+        this.error = 'Logout failed';
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     clearError() {
-      this.error = null
-    }
-  }
-}) 
+      this.error = null;
+    },
+  },
+});
