@@ -2,9 +2,9 @@
   <div class="container py-4">
     <!-- Filter Navigation -->
     <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-      <button class="btn btn-outline-primary" @click="current = 'pokemon'">
+      <!-- <button class="btn btn-outline-primary" @click="current = 'pokemon'">
         Pokémon
-      </button>
+      </button> -->
 
       <!-- Filters -->
       <input
