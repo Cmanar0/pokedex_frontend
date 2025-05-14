@@ -1,6 +1,4 @@
 export const login = async (username, password) => {
-  console.log('Sending:', { username, password });
-
   return fetch('http://localhost:8000/api/auth/login/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -18,7 +16,20 @@ export const logout = async () => {
 
 // Optional: Check authentication status
 export const checkAuth = async () => {
-  return fetch('http://localhost:8000/api/auth/me/', {
-    credentials: 'include',
-  });
+  try {
+    const response = await fetch('http://localhost:8000/api/auth/me/', {
+      credentials: 'include',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Status ${response.status}: Unauthorized or forbidden`);
+    }
+
+    const data = await response.json();
+    console.log('CheckAuth result:', data);
+    return data;
+  } catch (error) {
+    console.error('CheckAuth failed:', error.message);
+    return null;
+  }
 };

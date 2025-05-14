@@ -7,17 +7,31 @@ const routes = [
     path: '/login',
     name: 'Login',
     component: Login,
-    meta: { requiresAuth: false }
+    meta: { 
+      requiresAuth: false,
+      title: 'Login'
+    }
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../pages/Dashboard.vue'),
-    meta: { requiresAuth: true }
+    meta: { 
+      requiresAuth: true,
+      title: 'Dashboard'
+    }
   },
   {
     path: '/',
     redirect: '/dashboard'
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../pages/NotFound.vue'),
+    meta: {
+      title: 'Page Not Found'
+    }
   }
 ]
 
@@ -26,24 +40,33 @@ const router = createRouter({
   routes
 })
 
+// Navigation guard
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   
-  // Check if the route requires authentication
-  if (to.meta.requiresAuth) {
-    // If not authenticated, redirect to login
-    if (!authStore.isAuthenticated) {
-      next({ name: 'Login' })
-      return
-    }
+  // Set page title
+  document.title = `${to.meta.title} | Your App Name`
+
+  // If auth state is not initialized, check it
+  if (!authStore.isAuthenticated && !authStore.loading) {
+    await authStore.initializeAuth()
   }
-  
-  // If going to login page and already authenticated, redirect to dashboard
+
+  // Handle authentication requirements
+  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next({ 
+      name: 'Login',
+      query: { redirect: to.fullPath }
+    })
+    return
+  }
+
+  // Redirect authenticated users away from login page
   if (to.name === 'Login' && authStore.isAuthenticated) {
     next({ name: 'Dashboard' })
     return
   }
-  
+
   next()
 })
 

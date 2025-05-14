@@ -1,55 +1,81 @@
 <template>
   <div class="login-container">
-    <form @submit.prevent="handleLogin" class="login-form">
-      <h2>Login</h2>
-      <div class="form-group">
-        <label for="username">Username</label>
-        <input
-          type="text"
-          id="username"
-          v-model="username"
-          required
-          class="form-input"
-        />
+    <div class="login-card">
+      <div class="login-header">
+        <h1>Welcome Back</h1>
+        <p>Please sign in to continue</p>
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input
-          type="password"
-          id="password"
-          v-model="password"
-          required
-          class="form-input"
-        />
-      </div>
-      <button type="submit" class="login-button">Login</button>
-      <p v-if="error" class="error-message">{{ error }}</p>
-    </form>
+      
+      <form @submit.prevent="handleLogin" class="login-form">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input
+            type="text"
+            id="username"
+            v-model="username"
+            :disabled="authStore.isLoading"
+            required
+            class="form-input"
+            placeholder="Enter your username"
+          />
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            v-model="password"
+            :disabled="authStore.isLoading"
+            required
+            class="form-input"
+            placeholder="Enter your password"
+          />
+        </div>
+
+        <div v-if="authStore.authError" class="error-message">
+          {{ authStore.authError }}
+        </div>
+
+        <button 
+          type="submit" 
+          class="login-button"
+          :disabled="authStore.isLoading"
+        >
+          <span v-if="authStore.isLoading" class="loading-spinner"></span>
+          <span v-else>Sign In</span>
+        </button>
+      </form>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
-const error = ref('')
 
 const handleLogin = async () => {
-  error.value = ''
   const success = await authStore.login(username.value, password.value)
   
   if (success) {
-    router.push('/dashboard')
-  } else {
-    error.value = 'Invalid username or password'
+    // Redirect to the originally requested page or dashboard
+    const redirectPath = route.query.redirect || '/dashboard'
+    router.push(redirectPath)
   }
 }
+
+onMounted(() => {
+  // Clear any previous errors
+  authStore.clearError()
+})
 </script>
 
 <style scoped>
@@ -58,48 +84,122 @@ const handleLogin = async () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1rem;
 }
 
-.login-form {
+.login-card {
   background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-header h1 {
+  font-size: 2rem;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.login-header p {
+  color: #666;
+  margin-top: 0.5rem;
 }
 
 .form-group {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+  font-weight: 500;
 }
 
 .form-input {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-top: 0.25rem;
+  padding: 0.75rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.form-input::placeholder {
+  color: #a0aec0;
 }
 
 .login-button {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.875rem;
   background-color: #4CAF50;
   color: white;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 6px;
   font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
 }
 
-.login-button:hover {
+.login-button:hover:not(:disabled) {
   background-color: #45a049;
 }
 
+.login-button:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
 .error-message {
+  background-color: #fff5f5;
   color: #dc3545;
-  margin-top: 1rem;
-  text-align: center;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1.5rem;
+  }
+  
+  .login-header h1 {
+    font-size: 1.75rem;
+  }
 }
 </style> 
