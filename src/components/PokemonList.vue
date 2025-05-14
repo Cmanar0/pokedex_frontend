@@ -8,20 +8,96 @@
     </div>
 
     <!-- Pokémon Grid -->
-    <div v-else class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+    <div v-else class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
       <div class="col" v-for="pokemon in results" :key="pokemon.name">
-        <div class="card h-100">
-          <img
-            v-if="pokemon.sprite"
-            :src="pokemon.sprite"
-            class="card-img-top"
-            :alt="pokemon.name"
-          />
-          <div class="card-body">
-            <h5 class="card-title text-capitalize">{{ pokemon.name }}</h5>
-            <p class="card-text">
-              <a :href="pokemon.url" target="_blank">{{ pokemon.url }}</a>
-            </p>
+        <div
+          class="card border-0 shadow-sm h-100 rounded-4 d-flex flex-column justify-content-between overflow-hidden text-center"
+        >
+          <!-- Image -->
+          <div
+            class="d-flex justify-content-center align-items-center bg-white border-bottom"
+            style="height: 260px"
+          >
+            <img
+              v-if="pokemon.sprite"
+              :src="pokemon.sprite"
+              :alt="pokemon.name"
+              class="img-fluid"
+              style="
+                max-height: 240px;
+                object-fit: contain;
+                width: auto;
+                min-width: 100%;
+              "
+            />
+          </div>
+
+          <!-- Body -->
+          <div
+            class="card-body d-flex flex-column justify-content-between px-4 py-3"
+          >
+            <div class="mb-3">
+              <h5 class="card-title text-capitalize fw-semibold mb-3">
+                {{ pokemon.name }}
+              </h5>
+
+              <!-- Types -->
+              <div class="mb-2">
+                <div class="small fw-bold text-muted">Type:</div>
+                <div class="d-flex justify-content-center flex-wrap gap-1">
+                  <span
+                    v-for="type in pokemon.types"
+                    :key="type"
+                    class="badge rounded-pill px-3 py-1"
+                    :class="typeColor(type)"
+                  >
+                    {{ type }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Abilities -->
+              <div class="mb-2">
+                <div class="small fw-bold text-muted">Abilities:</div>
+                <div class="d-flex justify-content-center flex-wrap gap-1">
+                  <span
+                    v-for="ability in pokemon.abilities"
+                    :key="ability"
+                    class="badge bg-secondary-subtle text-dark fw-normal"
+                  >
+                    {{ ability }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Stats -->
+              <div class="small text-muted mt-2">
+                <div>
+                  <strong>Height:</strong>
+                  {{ (pokemon.height / 10).toFixed(1) }} m
+                </div>
+                <div>
+                  <strong>Weight:</strong>
+                  {{ (pokemon.weight / 10).toFixed(1) }} kg
+                </div>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="mt-auto d-flex flex-column gap-2">
+              <router-link
+                :to="`/pokemon/${pokemon.name}`"
+                class="btn btn-sm btn-outline-primary"
+              >
+                See Details
+              </router-link>
+              <button
+                class="btn btn-sm btn-success"
+                @click="savePokemon(pokemon)"
+              >
+                Save
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -86,9 +162,44 @@ const changePage = (newPage) => {
   page.value = newPage;
 };
 
+const savePokemon = (pokemon) => {
+  console.log('✅ Pokémon saved:', pokemon);
+};
+
+// Type badge coloring
+const typeColor = (type) => {
+  const map = {
+    grass: 'bg-success text-white',
+    fire: 'bg-danger text-white',
+    water: 'bg-primary text-white',
+    electric: 'bg-warning text-dark',
+    psychic: 'bg-danger text-white',
+    ice: 'bg-info text-dark',
+    dark: 'bg-dark text-white',
+    fairy: 'bg-light text-dark border',
+    normal: 'bg-secondary text-white',
+    bug: 'bg-success text-white',
+    poison: 'bg-secondary text-white', // fallback to secondary
+    ground: 'bg-warning text-dark',
+    rock: 'bg-dark text-white',
+    ghost: 'bg-dark text-white',
+    steel: 'bg-secondary text-white',
+    fighting: 'bg-danger text-white',
+    dragon: 'bg-primary text-white',
+    flying: 'bg-info text-dark',
+  };
+  return map[type.toLowerCase()] || 'bg-light text-dark border';
+};
+
 watch(
   [page, () => props.search, () => props.type, () => props.ability],
   fetchData
 );
 onMounted(fetchData);
 </script>
+
+<style scoped>
+.card-title {
+  font-size: 1.25rem;
+}
+</style>

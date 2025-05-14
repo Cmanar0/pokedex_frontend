@@ -1,73 +1,82 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-import Login from '../pages/Login.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '../stores/auth';
+import Login from '../pages/Login.vue';
 
 const routes = [
   {
     path: '/login',
     name: 'Login',
     component: Login,
-    meta: { 
+    meta: {
       requiresAuth: false,
-      title: 'Login'
-    }
+      title: 'Login',
+    },
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('../pages/Dashboard.vue'),
-    meta: { 
+    meta: {
       requiresAuth: true,
-      title: 'Dashboard'
-    }
+      title: 'Dashboard',
+    },
+  },
+  {
+    path: '/pokemon/:name',
+    name: 'PokemonDetail',
+    component: () => import('../pages/PokemonDetail.vue'),
+    meta: {
+      requiresAuth: true,
+      title: 'Pokémon Detail',
+    },
   },
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/dashboard',
   },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../pages/NotFound.vue'),
     meta: {
-      title: 'Page Not Found'
-    }
-  }
-]
+      title: 'Page Not Found',
+    },
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes,
+});
 
 // Navigation guard
 router.beforeEach(async (to, from, next) => {
-  const authStore = useAuthStore()
-  
+  const authStore = useAuthStore();
+
   // Set page title
-  document.title = `${to.meta.title} | Your App Name`
+  document.title = `${to.meta.title} | Your App Name`;
 
   // If auth state is not initialized, check it
   if (!authStore.isAuthenticated && !authStore.loading) {
-    await authStore.initializeAuth()
+    await authStore.initializeAuth();
   }
 
   // Handle authentication requirements
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next({ 
+    next({
       name: 'Login',
-      query: { redirect: to.fullPath }
-    })
-    return
+      query: { redirect: to.fullPath },
+    });
+    return;
   }
 
   // Redirect authenticated users away from login page
   if (to.name === 'Login' && authStore.isAuthenticated) {
-    next({ name: 'Dashboard' })
-    return
+    next({ name: 'Dashboard' });
+    return;
   }
 
-  next()
-})
+  next();
+});
 
-export default router 
+export default router;
