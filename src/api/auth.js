@@ -1,35 +1,26 @@
-export const login = async (username, password) => {
-  return fetch('http://localhost:8000/api/auth/login/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // Send and receive session cookie
-    body: JSON.stringify({ username, password }),
-  });
+import apiService from '../services/api-request';
+
+export const authAPI = {
+  async getCSRFToken() {
+    return await apiService.getRaw('/csrf/');
+  },
+
+  async login(credentials) {
+    return await apiService.post('/auth/login/', credentials);
+  },
+
+  async logout() {
+    return await apiService.post('/auth/logout/', {});
+  },
+
+  async checkAuth() {
+    return await apiService.get('/auth/me/');
+  },
 };
 
-export const logout = async () => {
-  return fetch('http://localhost:8000/api/auth/logout/', {
-    method: 'POST',
-    credentials: 'include',
-  });
-};
+export const login = authAPI.login;
+export const logout = authAPI.logout;
+export const checkAuth = authAPI.checkAuth;
+export const getCSRFToken = authAPI.getCSRFToken;
 
-// Optional: Check authentication status
-export const checkAuth = async () => {
-  try {
-    const response = await fetch('http://localhost:8000/api/auth/me/', {
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Status ${response.status}: Unauthorized or forbidden`);
-    }
-
-    const data = await response.json();
-    console.log('CheckAuth result:', data);
-    return data;
-  } catch (error) {
-    console.error('CheckAuth failed:', error.message);
-    return null;
-  }
-};
+export default authAPI;
