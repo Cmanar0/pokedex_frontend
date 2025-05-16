@@ -92,10 +92,15 @@
                 See Details
               </router-link>
               <button
-                class="btn btn-sm btn-success"
-                @click="savePokemon(pokemon)"
+                class="btn btn-sm"
+                :class="{
+                  'btn-success': !isFavorite(pokemon.name),
+                  'btn-danger': isFavorite(pokemon.name)
+                }"
+                @click="handleFavorite(pokemon.name)"
+                :disabled="!isAuthenticated"
               >
-                Save
+                {{ isFavorite(pokemon.name) ? 'Saved' : 'Save' }}
               </button>
             </div>
           </div>
@@ -124,9 +129,11 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, computed } from 'vue';
 import { getPokemonList } from '../api/pokemon';
 import { useRouter } from 'vue-router';
+import { useProfileStore } from '../stores/profile';
+import { useAuthStore } from '../stores/auth';
 
 const props = defineProps({
   search: String,
@@ -141,6 +148,11 @@ const previous = ref(null);
 const isLoading = ref(false);
 
 const router = useRouter();
+const profileStore = useProfileStore();
+const authStore = useAuthStore();
+
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isFavorite = (pokemonName) => profileStore.isFavorite(pokemonName);
 
 const fetchData = async () => {
   isLoading.value = true;
@@ -165,8 +177,12 @@ const changePage = (newPage) => {
   page.value = newPage;
 };
 
-const savePokemon = (pokemon) => {
-  console.log('✅ Pokémon saved:', pokemon);
+const handleFavorite = async (pokemonName) => {
+  try {
+    await profileStore.toggleFavorite(pokemonName);
+  } catch (err) {
+    console.error('Failed to update favorite:', err);
+  }
 };
 
 const goToDetail = (name) => {
@@ -198,11 +214,12 @@ const typeColor = (type) => {
   return map[type.toLowerCase()] || 'bg-light text-dark border';
 };
 
-watch(
-  [page, () => props.search, () => props.type, () => props.ability],
-  fetchData
-);
-onMounted(fetchData);
+onMounted(async () => {
+  if (isAuthenticated.value) {
+    await profileStore.fetchProfile();
+  }
+  await fetchData();
+});
 </script>
 
 <style scoped>

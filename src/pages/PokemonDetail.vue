@@ -56,8 +56,21 @@
       </div>
 
       <div class="actions">
-        <button @click="$router.back()" class="btn-back">
+        <button 
+          @click="$router.back()" 
+          class="btn-back"
+          :disabled="profileStore.isUpdatingFavorite"
+        >
           Back to List
+        </button>
+        <button 
+          v-if="isAuthenticated"
+          @click="handleFavorite" 
+          class="btn-favorite"
+          :class="{ 'is-favorite': isFavorite }"
+          :disabled="profileStore.isUpdatingFavorite || loading"
+        >
+          {{ isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
         </button>
       </div>
     </div>
@@ -66,15 +79,25 @@
 
 <script setup lang="ts">
 // ===================== IMPORTS =====================
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { getPokemonDetail } from '../api/pokemon';
+import { useProfileStore } from '../stores/profile';
+import { useAuthStore } from '../stores/auth';
+
+// ===================== STORES =====================
+const profileStore = useProfileStore();
+const authStore = useAuthStore();
 
 // ===================== STATE =====================
 const route = useRoute();
 const pokemon = ref<any>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
+
+// ===================== COMPUTED =====================
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isFavorite = computed(() => profileStore.isFavorite(route.params.name as string));
 
 // ===================== METHODS =====================
 const formatName = (name) => {
@@ -84,20 +107,29 @@ const formatName = (name) => {
     .join(' ');
 };
 
-const fetchPokemonDetails = async () => {
+const handleFavorite = async () => {
+  try {
+    await profileStore.toggleFavorite(route.params.name as string);
+  } catch (err: any) {
+    error.value = err.message || 'Failed to update favorites';
+  }
+};
+
+// ===================== LIFECYCLE HOOKS =====================
+onMounted(async () => {
   try {
     loading.value = true;
     error.value = null;
-    pokemon.value = await getPokemonDetail(route.params.name);
+    pokemon.value = await getPokemonDetail(route.params.name as string);
+    if (isAuthenticated.value) {
+      await profileStore.fetchProfile();
+    }
   } catch (err: any) {
     error.value = err.message || 'Failed to fetch Pokémon details';
   } finally {
     loading.value = false;
   }
-};
-
-// ===================== LIFECYCLE HOOKS =====================
-onMounted(fetchPokemonDetails);
+});
 </script>
 
 <style scoped>
@@ -216,7 +248,9 @@ onMounted(fetchPokemonDetails);
 }
 
 .actions {
-  text-align: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
 }
 
 .btn-back {
@@ -232,6 +266,34 @@ onMounted(fetchPokemonDetails);
 
 .btn-back:hover {
   background-color: #5a6268;
+}
+
+.btn-favorite {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-favorite:hover {
+  background-color: #45a049;
+}
+
+.btn-favorite.is-favorite {
+  background-color: #dc3545;
+}
+
+.btn-favorite.is-favorite:hover {
+  background-color: #c82333;
+}
+
+.btn-favorite:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
 }
 
 /* Type colors */

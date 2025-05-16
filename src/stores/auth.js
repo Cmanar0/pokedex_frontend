@@ -9,17 +9,17 @@ import {
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
-    isAuthenticated: false,
     user: null,
-    loading: false,
-    error: null,
+    isLoading: false,
+    authError: null,
+    isAuthenticated: false
   }),
 
   getters: {
     isLoggedIn: (state) => state.isAuthenticated,
     currentUser: (state) => state.user,
-    authError: (state) => state.error,
-    isLoading: (state) => state.loading,
+    authError: (state) => state.authError,
+    loadingState: (state) => state.isLoading,
   },
 
   actions: {
@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async initializeAuth() {
-      this.loading = true;
+      this.isLoading = true;
       try {
         const response = await checkAuth();
         this.isAuthenticated = true;
@@ -41,66 +41,68 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = false;
         this.user = null;
       } finally {
-        this.loading = false;
-      }
-    },
-
-    async register(email, password) {
-      this.loading = true;
-      this.error = null;
-      try {
-        await this.getCSRFToken();
-        const response = await apiRegister({
-          username: email,
-          email,
-          password,
-          password2: password,
-          favorite_pokemon: [],
-        });
-        this.isAuthenticated = true;
-        this.user = response.user;
-        return true;
-      } catch (error) {
-        this.error = error;
-        return false;
-      } finally {
-        this.loading = false;
+        this.isLoading = false;
       }
     },
 
     async login(username, password) {
-      this.loading = true;
-      this.error = null;
+      this.isLoading = true;
+      this.authError = null;
       try {
-        await this.getCSRFToken();
-        const response = await apiLogin({ username, password });
+        const response = await apiLogin(username, password);
+        this.user = response.user;
         this.isAuthenticated = true;
-        this.user = response.user || { username }; // adjust based on backend
         return true;
-      } catch (error) {
-        this.error = error.message || 'Login failed';
+      } catch (err) {
+        this.authError = err.message || 'Login failed';
         return false;
       } finally {
-        this.loading = false;
+        this.isLoading = false;
+      }
+    },
+
+    async register(userData) {
+      this.isLoading = true;
+      this.authError = null;
+      try {
+        const response = await apiRegister(userData);
+        this.user = response.user;
+        this.isAuthenticated = true;
+        return true;
+      } catch (err) {
+        this.authError = err.message || 'Registration failed';
+        return false;
+      } finally {
+        this.isLoading = false;
       }
     },
 
     async logout() {
-      this.loading = true;
+      this.isLoading = true;
       try {
         await apiLogout();
-        this.isAuthenticated = false;
         this.user = null;
-        this.error = null;
-      } catch (error) {
-        this.error = 'Logout failed';
+        this.isAuthenticated = false;
+      } catch (err) {
+        this.authError = err.message || 'Logout failed';
       } finally {
-        this.loading = false;
+        this.isLoading = false;
+      }
+    },
+
+    async checkAuth() {
+      try {
+        const response = await checkAuth();
+        this.isAuthenticated = response.authenticated;
+        return this.isAuthenticated;
+      } catch {
+        this.isAuthenticated = false;
+        return false;
       }
     },
 
     clearError() {
-      this.error = null;
-    },
+      this.authError = null;
+    }
   },
 });
