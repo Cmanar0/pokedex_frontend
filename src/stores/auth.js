@@ -4,6 +4,7 @@ import {
   logout as apiLogout,
   checkAuth,
   getCSRFToken as apiGetCSRFToken,
+  register as apiRegister,
 } from '../api/auth';
 
 export const useAuthStore = defineStore('auth', {
@@ -39,6 +40,29 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         this.isAuthenticated = false;
         this.user = null;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async register(email, password) {
+      this.loading = true;
+      this.error = null;
+      try {
+        await this.getCSRFToken();
+        const response = await apiRegister({
+          username: email,
+          email,
+          password,
+          password2: password,
+          favorite_pokemon: [],
+        });
+        this.isAuthenticated = true;
+        this.user = response.user;
+        return true;
+      } catch (error) {
+        this.error = error;
+        return false;
       } finally {
         this.loading = false;
       }

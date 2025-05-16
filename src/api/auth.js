@@ -9,6 +9,10 @@ export const authAPI = {
     return await apiService.post('/auth/login/', credentials);
   },
 
+  async register(userData) {
+    return await apiService.post('/auth/register/', userData);
+  },
+
   async logout() {
     return await apiService.post('/auth/logout/', {});
   },
@@ -19,6 +23,7 @@ export const authAPI = {
 };
 
 export const login = authAPI.login;
+export const register = authAPI.register;
 export const logout = authAPI.logout;
 export const checkAuth = authAPI.checkAuth;
 export const getCSRFToken = authAPI.getCSRFToken;

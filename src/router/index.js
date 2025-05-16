@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import Login from '../pages/Login.vue';
+import Register from '../pages/Register.vue';
 
 const routes = [
   {
@@ -10,6 +11,15 @@ const routes = [
     meta: {
       requiresAuth: false,
       title: 'Login',
+    },
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: {
+      requiresAuth: false,
+      title: 'Register',
     },
   },
   {
