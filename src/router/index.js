@@ -2,11 +2,35 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
+import Dashboard from '../pages/Dashboard.vue';
+import PokemonDetail from '../pages/PokemonDetail.vue';
 
 const routes = [
   {
+    path: '/',
+    redirect: '/dashboard'
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
+    component: Dashboard,
+    meta: {
+      requiresAuth: true,
+      title: 'Dashboard',
+    },
+  },
+  {
+    path: '/pokemon/:name',
+    name: 'pokemon-detail',
+    component: PokemonDetail,
+    meta: {
+      requiresAuth: true,
+      title: 'Pokémon Details',
+    },
+  },
+  {
     path: '/login',
-    name: 'Login',
+    name: 'login',
     component: Login,
     meta: {
       requiresAuth: false,
@@ -15,34 +39,12 @@ const routes = [
   },
   {
     path: '/register',
-    name: 'Register',
+    name: 'register',
     component: Register,
     meta: {
       requiresAuth: false,
       title: 'Register',
     },
-  },
-  {
-    path: '/dashboard',
-    name: 'Dashboard',
-    component: () => import('../pages/Dashboard.vue'),
-    meta: {
-      requiresAuth: true,
-      title: 'Dashboard',
-    },
-  },
-  {
-    path: '/pokemon/:name',
-    name: 'PokemonDetail',
-    component: () => import('../pages/PokemonDetail.vue'),
-    meta: {
-      requiresAuth: true,
-      title: 'Pokémon Detail',
-    },
-  },
-  {
-    path: '/',
-    redirect: '/dashboard',
   },
   {
     path: '/:pathMatch(.*)*',

@@ -126,6 +126,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
 import { getPokemonList } from '../api/pokemon';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   search: String,
@@ -138,6 +139,8 @@ const page = ref(1);
 const next = ref(null);
 const previous = ref(null);
 const isLoading = ref(false);
+
+const router = useRouter();
 
 const fetchData = async () => {
   isLoading.value = true;
@@ -164,6 +167,10 @@ const changePage = (newPage) => {
 
 const savePokemon = (pokemon) => {
   console.log('✅ Pokémon saved:', pokemon);
+};
+
+const goToDetail = (name) => {
+  router.push(`/pokemon/${name}`);
 };
 
 // Type badge coloring
@@ -202,4 +209,14 @@ onMounted(fetchData);
 .card-title {
   font-size: 1.25rem;
 }
-</style>
+
+.pokemon-card {
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.pokemon-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+</style> 
