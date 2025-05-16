@@ -50,14 +50,31 @@
           </div>
         </div>
       </div>
+
+      <div class="mb-3" v-if="isAuthenticated">
+        <div class="form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="favoritesOnly"
+            v-model="showFavoritesOnly"
+            @change="handleFavoritesChange"
+          />
+          <label class="form-check-label" for="favoritesOnly">
+            My Favorite Pokémon
+          </label>
+        </div>
+      </div>
     </div>
 
     <!-- Content Slot -->
     <div v-if="current === 'pokemon'">
       <PokemonList
+        ref="pokemonListRef"
         :search="search"
         :type="selectedType"
         :ability="selectedAbility"
+        :show-favorites-only="showFavoritesOnly"
       />
     </div>
   </div>
@@ -67,6 +84,7 @@
 import { ref, onMounted, computed, watch } from 'vue';
 import debounce from 'lodash.debounce';
 import PokemonList from './PokemonList.vue';
+import { useAuthStore } from '../stores/auth';
 
 const current = ref('pokemon');
 const searchInput = ref('');
@@ -75,6 +93,8 @@ const selectedType = ref('');
 const selectedAbility = ref('');
 const abilitySearch = ref('');
 const showAbilityDropdown = ref(false);
+const showFavoritesOnly = ref(false);
+const authStore = useAuthStore();
 
 const types = ref([
   { name: 'Normal' },
@@ -424,6 +444,17 @@ const selectAbility = (ability) => {
 const debouncedSearch = debounce(() => {
   search.value = searchInput.value;
 }, 400);
+
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+const emit = defineEmits(['search', 'type-change', 'ability-change', 'favorites-change']);
+
+const pokemonListRef = ref(null);
+
+const handleFavoritesChange = () => {
+  // Call the child's refresh method directly
+  pokemonListRef.value?.refresh();
+};
 </script>
 
 <style scoped>

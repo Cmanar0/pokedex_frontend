@@ -130,7 +130,7 @@
 
 <script setup>
 import { ref, watch, onMounted, computed } from 'vue';
-import { getPokemonList } from '../api/pokemon';
+import { getPokemonList, getFavoritePokemonList } from '../api/pokemon';
 import { useRouter } from 'vue-router';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
@@ -139,6 +139,10 @@ const props = defineProps({
   search: String,
   type: String,
   ability: String,
+  showFavoritesOnly: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const results = ref([]);
@@ -156,16 +160,31 @@ const isFavorite = (pokemonName) => profileStore.isFavorite(pokemonName);
 
 const fetchData = async () => {
   isLoading.value = true;
-  const params = { page: page.value };
-  if (props.search) params.search = props.search;
-  if (props.type) params.type = props.type;
-  if (props.ability) params.ability = props.ability;
-
+  
   try {
-    const data = await getPokemonList(params);
-    results.value = data.results;
-    next.value = data.next;
-    previous.value = data.previous;
+    let data;
+    if (props.showFavoritesOnly) {
+      // Pass all filter parameters to the favorites endpoint
+      const params = {};
+      if (props.search) params.search = props.search;
+      if (props.type) params.type = props.type;
+      if (props.ability) params.ability = props.ability;
+
+      data = await getFavoritePokemonList(params);
+      results.value = data.results;
+      next.value = null;
+      previous.value = null;
+    } else {
+      const params = { page: page.value };
+      if (props.search) params.search = props.search;
+      if (props.type) params.type = props.type;
+      if (props.ability) params.ability = props.ability;
+
+      data = await getPokemonList(params);
+      results.value = data.results;
+      next.value = data.next;
+      previous.value = data.previous;
+    }
   } catch (err) {
     console.error('Failed to fetch Pokémon list:', err);
   } finally {
@@ -214,12 +233,29 @@ const typeColor = (type) => {
   return map[type.toLowerCase()] || 'bg-light text-dark border';
 };
 
+const refresh = () => {
+  fetchData();
+};
+
+// Expose the refresh method to parent
+defineExpose({
+  refresh
+});
+
 onMounted(async () => {
   if (isAuthenticated.value) {
     await profileStore.fetchProfile();
   }
   await fetchData();
 });
+
+// Update the watch to include showFavoritesOnly
+watch(
+  [page, () => props.search, () => props.type, () => props.ability, () => props.showFavoritesOnly],
+  () => {
+    fetchData();
+  }
+);
 </script>
 
 <style scoped>
