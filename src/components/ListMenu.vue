@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-4">
+  <div class="container">
     <!-- Filter Navigation -->
     <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
       <!-- <button class="btn btn-outline-primary" @click="current = 'pokemon'">
@@ -29,15 +29,12 @@
           class="form-control"
           v-model="abilitySearch"
           @focus="showAbilityDropdown = true"
-          @blur="setTimeout(() => showAbilityDropdown = false, 200)"
+          @blur="setTimeout(() => (showAbilityDropdown = false), 200)"
           placeholder="Search ability..."
           style="min-width: 200px"
         />
         <div v-if="showAbilityDropdown" class="ability-dropdown">
-          <div
-            class="ability-option"
-            @mousedown="selectAbility({ name: '' })"
-          >
+          <div class="ability-option" @mousedown="selectAbility({ name: '' })">
             All Abilities
           </div>
           <div
@@ -70,6 +67,7 @@
     <!-- Content Slot -->
     <div v-if="current === 'pokemon'">
       <PokemonList
+        :style="{ maxHeight: isComparisonMode ? '56vh' : 'none' }"
         ref="pokemonListRef"
         :search="search"
         :type="selectedType"
@@ -88,17 +86,18 @@ import { ref, onMounted, computed, watch } from 'vue';
 import debounce from 'lodash.debounce';
 import PokemonList from './PokemonList.vue';
 import { useAuthStore } from '../stores/auth';
+import { getPokemonList, getPokemonTypes } from '../api/pokemon';
 
 const props = defineProps({
   isComparisonMode: {
     type: Boolean,
-    default: false
+    default: false,
   },
   selectedPosition: {
     type: String,
     default: null,
-    validator: (value) => ['left', 'right', null].includes(value)
-  }
+    validator: (value) => ['left', 'right', null].includes(value),
+  },
 });
 
 const current = ref('pokemon');
@@ -110,27 +109,9 @@ const abilitySearch = ref('');
 const showAbilityDropdown = ref(false);
 const showFavoritesOnly = ref(false);
 const authStore = useAuthStore();
-
-const types = ref([
-  { name: 'Normal' },
-  { name: 'Fire' },
-  { name: 'Water' },
-  { name: 'Electric' },
-  { name: 'Grass' },
-  { name: 'Ice' },
-  { name: 'Fighting' },
-  { name: 'Poison' },
-  { name: 'Ground' },
-  { name: 'Flying' },
-  { name: 'Psychic' },
-  { name: 'Bug' },
-  { name: 'Rock' },
-  { name: 'Ghost' },
-  { name: 'Dragon' },
-  { name: 'Dark' },
-  { name: 'Steel' },
-  { name: 'Fairy' }
-]);
+const types = ref([]);
+const pokemons = ref([]);
+const isLoading = ref(false);
 
 const abilities = ref([
   { name: 'stench' },
@@ -426,7 +407,7 @@ const abilities = ref([
   { name: 'earth-eater' },
   { name: 'mycelium-might' },
   { name: 'minds-eye' },
-  { name: 'supersweet-syrup' }
+  { name: 'supersweet-syrup' },
 ]);
 
 // Watch for changes in abilitySearch
@@ -438,16 +419,17 @@ watch(abilitySearch, (newValue) => {
 
 const filteredAbilities = computed(() => {
   if (!abilitySearch.value) return abilities.value;
-  return abilities.value.filter(ability =>
+  return abilities.value.filter((ability) =>
     ability.name.toLowerCase().includes(abilitySearch.value.toLowerCase())
   );
 });
 
 const formatAbilityName = (name) => {
   if (!name) return 'All Abilities';
-  return name.split('-').map(word => 
-    word.charAt(0).toUpperCase() + word.slice(1)
-  ).join(' ');
+  return name
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 const selectAbility = (ability) => {
@@ -462,7 +444,13 @@ const debouncedSearch = debounce(() => {
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 
-const emit = defineEmits(['search', 'type-change', 'ability-change', 'favorites-change', 'select-pokemon']);
+const emit = defineEmits([
+  'search',
+  'type-change',
+  'ability-change',
+  'favorites-change',
+  'select-pokemon',
+]);
 
 const pokemonListRef = ref(null);
 
@@ -479,6 +467,43 @@ watch([search, selectedType, selectedAbility, showFavoritesOnly], () => {
   // Reset the list when filters change
   if (pokemonListRef.value) {
     pokemonListRef.value.refresh();
+  }
+});
+
+const handleSearch = () => {
+  // Reset pagination when searching
+  if (props.isComparisonMode) {
+    pokemons.value = [];
+  }
+};
+
+const handleFilter = () => {
+  // Reset pagination when filtering
+  if (props.isComparisonMode) {
+    pokemons.value = [];
+  }
+};
+
+// Load types on mount
+const loadTypes = async () => {
+  try {
+    types.value = await getPokemonTypes();
+  } catch (error) {
+    console.error('Failed to fetch Pokemon types:', error);
+  }
+};
+
+onMounted(() => {
+  loadTypes();
+});
+
+// Watch for comparison mode changes
+watch(() => props.isComparisonMode, (newValue) => {
+  if (newValue) {
+    // Reset filters and list when entering comparison mode
+    searchInput.value = '';
+    selectedType.value = '';
+    pokemons.value = [];
   }
 });
 </script>
@@ -500,7 +525,7 @@ watch([search, selectedType, selectedAbility, showFavoritesOnly], () => {
   border: 1px solid #ddd;
   border-radius: 4px;
   z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .ability-option {

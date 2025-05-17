@@ -1,5 +1,5 @@
 <template>
-  <div class="pokemon-list">
+  <div class="pokemon-list" ref="listContainer" @scroll="handleScroll">
     <!-- Loading Spinner -->
     <div v-if="isLoading" class="loading-container">
       <div class="loading-spinner"></div>
@@ -89,18 +89,19 @@
               >
                 Compare
               </router-link>
-              <button
-                class="btn"
-                :class="{
-                  'btn-primary': !isFavorite(pokemon.name),
-                  'btn-secondary': isFavorite(pokemon.name)
-                }"
-                @click="handleFavorite(pokemon.name)"
-                :disabled="!isAuthenticated || profileStore.isUpdatingFavorite"
-              >
-                {{ isFavorite(pokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
-              </button>
             </template>
+            <button
+              v-if="isAuthenticated"
+              class="btn"
+              :class="{
+                'btn-primary': !isFavorite(pokemon.name),
+                'btn-secondary': isFavorite(pokemon.name)
+              }"
+              @click="handleFavorite(pokemon.name)"
+              :disabled="profileStore.isUpdatingFavorite"
+            >
+              {{ isFavorite(pokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+            </button>
           </div>
         </div>
       </div>
@@ -127,7 +128,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed } from 'vue';
+import { ref, watch, onMounted, computed, nextTick } from 'vue';
 import { getPokemonList, getFavoritePokemonList } from '../api/pokemon';
 import { useRouter } from 'vue-router';
 import { useProfileStore } from '../stores/profile';
@@ -159,6 +160,8 @@ const page = ref(1);
 const next = ref(null);
 const previous = ref(null);
 const isLoading = ref(false);
+const hasMore = ref(true);
+const listContainer = ref(null);
 
 const router = useRouter();
 const profileStore = useProfileStore();
@@ -177,6 +180,9 @@ const formatName = (name) => {
 
 const fetchData = async () => {
   isLoading.value = true;
+  
+  // Save scroll position before fetching new data
+  const scrollPosition = listContainer.value?.scrollTop || 0;
   
   try {
     let data;
@@ -198,9 +204,25 @@ const fetchData = async () => {
       if (props.ability) params.ability = props.ability;
 
       data = await getPokemonList(params);
-      results.value = data.results;
+      
+      if (props.isComparisonMode) {
+        // In comparison mode, append new results to existing ones
+        results.value = [...results.value, ...data.results];
+        
+        // Restore scroll position after the DOM updates
+        nextTick(() => {
+          if (listContainer.value) {
+            listContainer.value.scrollTop = scrollPosition;
+          }
+        });
+      } else {
+        // In normal mode, replace results
+        results.value = data.results;
+      }
+      
       next.value = data.next;
       previous.value = data.previous;
+      hasMore.value = !!data.next;
     }
   } catch (err) {
     console.error('Failed to fetch Pokémon list:', err);
@@ -277,6 +299,39 @@ watch(
 const handleSelect = (pokemonName) => {
   emit('select-pokemon', pokemonName);
 };
+
+const handleScroll = () => {
+  if (!props.isComparisonMode || !listContainer.value) return;
+  
+  const { scrollTop, scrollHeight, clientHeight } = listContainer.value;
+  const scrollBottom = scrollTop + clientHeight;
+  
+  // Load more when user scrolls to 80% of the list
+  if (scrollBottom >= scrollHeight * 0.8 && !isLoading.value && hasMore.value) {
+    page.value += 1;
+    fetchData();
+  }
+};
+
+// Reset pagination when comparison mode changes
+watch(() => props.isComparisonMode, (newValue) => {
+  if (newValue) {
+    page.value = 1;
+    results.value = []; // Clear existing results
+    hasMore.value = true;
+    fetchData();
+  }
+});
+
+// Watch for filter changes to reset pagination in comparison mode
+watch([() => props.search, () => props.type, () => props.ability], () => {
+  if (props.isComparisonMode) {
+    page.value = 1;
+    results.value = []; // Clear existing results
+    hasMore.value = true;
+    fetchData();
+  }
+});
 </script>
 
 <style scoped>

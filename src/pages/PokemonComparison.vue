@@ -52,17 +52,26 @@
                 <div class="stats">
                   <div class="stat">
                     <span class="stat-label">Height</span>
-                    <span class="stat-value"
-                      >{{ leftPokemon.height / 10 }}m</span
-                    >
+                    <span class="stat-value">{{ leftPokemon.height / 10 }}m</span>
                   </div>
                   <div class="stat">
                     <span class="stat-label">Weight</span>
-                    <span class="stat-value"
-                      >{{ leftPokemon.weight / 10 }}kg</span
-                    >
+                    <span class="stat-value">{{ leftPokemon.weight / 10 }}kg</span>
                   </div>
                 </div>
+              </div>
+              <div class="favorite-section" v-if="isAuthenticated">
+                <button
+                  class="btn"
+                  :class="{
+                    'btn-primary': !isFavorite(leftPokemon.name),
+                    'btn-secondary': isFavorite(leftPokemon.name)
+                  }"
+                  @click="handleFavorite(leftPokemon.name)"
+                  :disabled="profileStore.isUpdatingFavorite"
+                >
+                  {{ isFavorite(leftPokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+                </button>
               </div>
             </div>
           </div>
@@ -212,17 +221,26 @@
                 <div class="stats">
                   <div class="stat">
                     <span class="stat-label">Height</span>
-                    <span class="stat-value"
-                      >{{ rightPokemon.height / 10 }}m</span
-                    >
+                    <span class="stat-value">{{ rightPokemon.height / 10 }}m</span>
                   </div>
                   <div class="stat">
                     <span class="stat-label">Weight</span>
-                    <span class="stat-value"
-                      >{{ rightPokemon.weight / 10 }}kg</span
-                    >
+                    <span class="stat-value">{{ rightPokemon.weight / 10 }}kg</span>
                   </div>
                 </div>
+              </div>
+              <div class="favorite-section" v-if="isAuthenticated">
+                <button
+                  class="btn"
+                  :class="{
+                    'btn-primary': !isFavorite(rightPokemon.name),
+                    'btn-secondary': isFavorite(rightPokemon.name)
+                  }"
+                  @click="handleFavorite(rightPokemon.name)"
+                  :disabled="profileStore.isUpdatingFavorite"
+                >
+                  {{ isFavorite(rightPokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+                </button>
               </div>
             </div>
           </div>
@@ -240,17 +258,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getPokemonDetail } from '../api/pokemon';
 import ListMenu from '../components/ListMenu.vue';
 import { useAuthStore } from '../stores/auth';
+import { useProfileStore } from '../stores/profile';
 
 const route = useRoute();
 const router = useRouter();
 const leftPokemon = ref(null);
 const rightPokemon = ref(null);
 const authStore = useAuthStore();
+const profileStore = useProfileStore();
+
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const isFavorite = (pokemonName) => profileStore.isFavorite(pokemonName);
+
+const handleFavorite = async (pokemonName) => {
+  try {
+    await profileStore.toggleFavorite(pokemonName);
+  } catch (error) {
+    console.error('Failed to update favorite:', error);
+  }
+};
 
 const formatName = (name) => {
   return name
@@ -512,10 +543,9 @@ watch(
   overflow-y: auto;
   flex: 1;
   min-width: 0;
+  padding-bottom: 4rem;
 }
-.list-menu {
-  max-height: 60%;
-}
+
 .info-section {
   background: var(--neutral-50);
   padding: 0.75rem;
@@ -579,7 +609,6 @@ watch(
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
 }
 
 /* Pokemon Type Colors */
@@ -737,6 +766,27 @@ watch(
 .types .type-badge,
 .abilities .ability-badge {
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.favorite-section {
+  position: absolute;
+  bottom: 1rem;
+  left: 0.75rem;
+  right: 0.75rem;
+  padding: 0.75rem;
+  background: var(--neutral-50);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  z-index: 1;
+}
+
+.favorite-section .btn {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 0.875rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
