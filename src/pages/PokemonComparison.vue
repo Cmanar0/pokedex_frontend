@@ -1,202 +1,239 @@
 <template>
-  <div class="comparison-container">
-    <!-- Left Pokemon Section -->
-    <div class="comparison-section left-section">
-      <div v-if="leftPokemon" class="pokemon-detail">
-        <button class="close-button" @click="clearLeftPokemon">
-          <span class="close-icon">×</span>
+  <div class="comparison-page">
+    <nav class="dashboard-nav">
+      <div class="nav-brand" @click="router.push('/dashboard')">
+        <h1>Pokédex</h1>
+      </div>
+      <div class="nav-actions">
+        <button @click="handleLogout" class="logout-button">
+          <span>Logout</span>
         </button>
-        <div class="pokemon-header">
-          <h2>{{ formatName(leftPokemon.name) }}</h2>
-          <div class="types">
-            <span
-              v-for="type in leftPokemon.types"
-              :key="type"
-              class="type-badge"
-              :class="type.toLowerCase()"
-            >
-              {{ type }}
-            </span>
-          </div>
-        </div>
-        <div class="pokemon-content">
-          <div class="pokemon-image">
-            <img :src="leftPokemon.sprite" :alt="leftPokemon.name" class="sprite" />
-          </div>
-          <div class="pokemon-info">
-            <div class="info-section">
-              <h3>Abilities</h3>
-              <ul>
-                <li v-for="ability in leftPokemon.abilities" :key="ability">
-                  {{ formatName(ability) }}
-                </li>
-              </ul>
-            </div>
-            <div class="info-section">
-              <h3>Stats</h3>
-              <div class="stats">
-                <div class="stat">
-                  <span class="stat-label">Height</span>
-                  <span class="stat-value">{{ leftPokemon.height / 10 }}m</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-label">Weight</span>
-                  <span class="stat-value">{{ leftPokemon.weight / 10 }}kg</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-      <div v-else class="empty-state">
-        <ListMenu 
-          @select-pokemon="selectLeftPokemon" 
-          :is-comparison-mode="true"
-          :selected-position="'left'"
-        />
-      </div>
-    </div>
-
-    <!-- Middle Section -->
-    <div class="comparison-section middle-section">
-      <div v-if="leftPokemon && rightPokemon" class="comparison-content">
-        <div class="comparison-header">
-          <h2>Comparison</h2>
-        </div>
-        
-        <!-- Stats Comparison -->
-        <div class="comparison-group">
-          <h3>Height</h3>
-          <div class="comparison-values">
-            <span class="value left">{{ (leftPokemon.height / 10).toFixed(1) }}m</span>
-            <div class="divider"></div>
-            <span class="value right">{{ (rightPokemon.height / 10).toFixed(1) }}m</span>
-          </div>
-        </div>
-
-        <div class="comparison-group">
-          <h3>Weight</h3>
-          <div class="comparison-values">
-            <span class="value left">{{ (leftPokemon.weight / 10).toFixed(1) }}kg</span>
-            <div class="divider"></div>
-            <span class="value right">{{ (rightPokemon.weight / 10).toFixed(1) }}kg</span>
-          </div>
-        </div>
-
-        <!-- Types Comparison -->
-        <div class="comparison-group">
-          <h3>Types</h3>
-          <div class="comparison-values">
-            <div class="types left">
-              <div 
-                v-for="type in leftPokemon.types" 
-                :key="`left-${type}`"
+    </nav>
+    <div class="comparison-container">
+      <!-- Left Pokemon Section -->
+      <div class="comparison-section left-section">
+        <div v-if="leftPokemon" class="pokemon-detail">
+          <button class="close-button" @click="clearLeftPokemon">
+            <span class="close-icon">×</span>
+          </button>
+          <div class="pokemon-header">
+            <h2>{{ formatName(leftPokemon.name) }}</h2>
+            <div class="types">
+              <span
+                v-for="type in leftPokemon.types"
+                :key="type"
                 class="type-badge"
                 :class="type.toLowerCase()"
               >
                 {{ type }}
+              </span>
+            </div>
+          </div>
+          <div class="pokemon-content">
+            <div class="pokemon-image">
+              <img
+                :src="leftPokemon.sprite"
+                :alt="leftPokemon.name"
+                class="sprite"
+              />
+            </div>
+            <div class="pokemon-info">
+              <div class="info-section">
+                <h3>Abilities</h3>
+                <ul>
+                  <li v-for="ability in leftPokemon.abilities" :key="ability">
+                    {{ formatName(ability) }}
+                  </li>
+                </ul>
+              </div>
+              <div class="info-section">
+                <h3>Stats</h3>
+                <div class="stats">
+                  <div class="stat">
+                    <span class="stat-label">Height</span>
+                    <span class="stat-value"
+                      >{{ leftPokemon.height / 10 }}m</span
+                    >
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label">Weight</span>
+                    <span class="stat-value"
+                      >{{ leftPokemon.weight / 10 }}kg</span
+                    >
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="divider"></div>
-            <div class="types right">
-              <div 
-                v-for="type in rightPokemon.types" 
-                :key="`right-${type}`"
+          </div>
+        </div>
+        <div v-else class="empty-state">
+          <ListMenu
+            class="list-menu"
+            @select-pokemon="selectLeftPokemon"
+            :is-comparison-mode="true"
+            :selected-position="'left'"
+          />
+        </div>
+      </div>
+
+      <!-- Middle Section -->
+      <div class="comparison-section middle-section">
+        <div v-if="leftPokemon && rightPokemon" class="comparison-content">
+          <div class="comparison-header">
+            <h2>Comparison</h2>
+          </div>
+
+          <!-- Stats Comparison -->
+          <div class="comparison-group">
+            <h3>Height</h3>
+            <div class="comparison-values">
+              <span class="value left"
+                >{{ (leftPokemon.height / 10).toFixed(1) }}m</span
+              >
+              <div class="divider"></div>
+              <span class="value right"
+                >{{ (rightPokemon.height / 10).toFixed(1) }}m</span
+              >
+            </div>
+          </div>
+
+          <div class="comparison-group">
+            <h3>Weight</h3>
+            <div class="comparison-values">
+              <span class="value left"
+                >{{ (leftPokemon.weight / 10).toFixed(1) }}kg</span
+              >
+              <div class="divider"></div>
+              <span class="value right"
+                >{{ (rightPokemon.weight / 10).toFixed(1) }}kg</span
+              >
+            </div>
+          </div>
+
+          <!-- Types Comparison -->
+          <div class="comparison-group">
+            <h3>Types</h3>
+            <div class="comparison-values">
+              <div class="types left">
+                <div
+                  v-for="type in leftPokemon.types"
+                  :key="`left-${type}`"
+                  class="type-badge"
+                  :class="type.toLowerCase()"
+                >
+                  {{ type }}
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="types right">
+                <div
+                  v-for="type in rightPokemon.types"
+                  :key="`right-${type}`"
+                  class="type-badge"
+                  :class="type.toLowerCase()"
+                >
+                  {{ type }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Abilities Comparison -->
+          <div class="comparison-group">
+            <h3>Abilities</h3>
+            <div class="comparison-values">
+              <div class="abilities left">
+                <div
+                  v-for="ability in leftPokemon.abilities"
+                  :key="`left-${ability}`"
+                  class="ability-badge"
+                >
+                  {{ formatName(ability) }}
+                </div>
+              </div>
+              <div class="divider"></div>
+              <div class="abilities right">
+                <div
+                  v-for="ability in rightPokemon.abilities"
+                  :key="`right-${ability}`"
+                  class="ability-badge"
+                >
+                  {{ formatName(ability) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div v-else class="comparison-instructions">
+          <h2>Compare Pokémon</h2>
+          <p>Select two Pokémon to compare their stats and abilities</p>
+        </div>
+      </div>
+
+      <!-- Right Pokemon Section -->
+      <div class="comparison-section right-section">
+        <div v-if="rightPokemon" class="pokemon-detail">
+          <button class="close-button" @click="clearRightPokemon">
+            <span class="close-icon">×</span>
+          </button>
+          <div class="pokemon-header">
+            <h2>{{ formatName(rightPokemon.name) }}</h2>
+            <div class="types">
+              <span
+                v-for="type in rightPokemon.types"
+                :key="type"
                 class="type-badge"
                 :class="type.toLowerCase()"
               >
                 {{ type }}
+              </span>
+            </div>
+          </div>
+          <div class="pokemon-content">
+            <div class="pokemon-image">
+              <img
+                :src="rightPokemon.sprite"
+                :alt="rightPokemon.name"
+                class="sprite"
+              />
+            </div>
+            <div class="pokemon-info">
+              <div class="info-section">
+                <h3>Abilities</h3>
+                <ul>
+                  <li v-for="ability in rightPokemon.abilities" :key="ability">
+                    {{ formatName(ability) }}
+                  </li>
+                </ul>
               </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Abilities Comparison -->
-        <div class="comparison-group">
-          <h3>Abilities</h3>
-          <div class="comparison-values">
-            <div class="abilities left">
-              <div 
-                v-for="ability in leftPokemon.abilities" 
-                :key="`left-${ability}`"
-                class="ability-badge"
-              >
-                {{ formatName(ability) }}
-              </div>
-            </div>
-            <div class="divider"></div>
-            <div class="abilities right">
-              <div 
-                v-for="ability in rightPokemon.abilities" 
-                :key="`right-${ability}`"
-                class="ability-badge"
-              >
-                {{ formatName(ability) }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div v-else class="comparison-instructions">
-        <h2>Compare Pokémon</h2>
-        <p>Select two Pokémon to compare their stats and abilities</p>
-      </div>
-    </div>
-
-    <!-- Right Pokemon Section -->
-    <div class="comparison-section right-section">
-      <div v-if="rightPokemon" class="pokemon-detail">
-        <button class="close-button" @click="clearRightPokemon">
-          <span class="close-icon">×</span>
-        </button>
-        <div class="pokemon-header">
-          <h2>{{ formatName(rightPokemon.name) }}</h2>
-          <div class="types">
-            <span
-              v-for="type in rightPokemon.types"
-              :key="type"
-              class="type-badge"
-              :class="type.toLowerCase()"
-            >
-              {{ type }}
-            </span>
-          </div>
-        </div>
-        <div class="pokemon-content">
-          <div class="pokemon-image">
-            <img :src="rightPokemon.sprite" :alt="rightPokemon.name" class="sprite" />
-          </div>
-          <div class="pokemon-info">
-            <div class="info-section">
-              <h3>Abilities</h3>
-              <ul>
-                <li v-for="ability in rightPokemon.abilities" :key="ability">
-                  {{ formatName(ability) }}
-                </li>
-              </ul>
-            </div>
-            <div class="info-section">
-              <h3>Stats</h3>
-              <div class="stats">
-                <div class="stat">
-                  <span class="stat-label">Height</span>
-                  <span class="stat-value">{{ rightPokemon.height / 10 }}m</span>
-                </div>
-                <div class="stat">
-                  <span class="stat-label">Weight</span>
-                  <span class="stat-value">{{ rightPokemon.weight / 10 }}kg</span>
+              <div class="info-section">
+                <h3>Stats</h3>
+                <div class="stats">
+                  <div class="stat">
+                    <span class="stat-label">Height</span>
+                    <span class="stat-value"
+                      >{{ rightPokemon.height / 10 }}m</span
+                    >
+                  </div>
+                  <div class="stat">
+                    <span class="stat-label">Weight</span>
+                    <span class="stat-value"
+                      >{{ rightPokemon.weight / 10 }}kg</span
+                    >
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <div v-else class="empty-state">
-        <ListMenu 
-          @select-pokemon="selectRightPokemon" 
-          :is-comparison-mode="true"
-          :selected-position="'right'"
-        />
+        <div v-else class="empty-state">
+          <ListMenu
+            @select-pokemon="selectRightPokemon"
+            :is-comparison-mode="true"
+            :selected-position="'right'"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -207,16 +244,18 @@ import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getPokemonDetail } from '../api/pokemon';
 import ListMenu from '../components/ListMenu.vue';
+import { useAuthStore } from '../stores/auth';
 
 const route = useRoute();
 const router = useRouter();
 const leftPokemon = ref(null);
 const rightPokemon = ref(null);
+const authStore = useAuthStore();
 
 const formatName = (name) => {
   return name
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
 
@@ -255,6 +294,11 @@ const clearRightPokemon = () => {
   updateUrl();
 };
 
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push('/login');
+};
+
 onMounted(async () => {
   // Load Pokemon from URL parameters
   const { left, right } = route.query;
@@ -263,37 +307,97 @@ onMounted(async () => {
 });
 
 // Watch for URL changes
-watch(() => route.query, async (newQuery) => {
-  if (newQuery.left && (!leftPokemon.value || leftPokemon.value.name !== newQuery.left)) {
-    await selectLeftPokemon(newQuery.left);
+watch(
+  () => route.query,
+  async (newQuery) => {
+    if (
+      newQuery.left &&
+      (!leftPokemon.value || leftPokemon.value.name !== newQuery.left)
+    ) {
+      await selectLeftPokemon(newQuery.left);
+    }
+    if (
+      newQuery.right &&
+      (!rightPokemon.value || rightPokemon.value.name !== newQuery.right)
+    ) {
+      await selectRightPokemon(newQuery.right);
+    }
   }
-  if (newQuery.right && (!rightPokemon.value || rightPokemon.value.name !== newQuery.right)) {
-    await selectRightPokemon(newQuery.right);
-  }
-});
+);
 </script>
 
 <style scoped>
+.comparison-page {
+  min-height: 100vh;
+  background-color: var(--neutral-50);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.dashboard-nav {
+  background: white;
+  padding: 0.75rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  flex-shrink: 0;
+}
+
+.nav-brand {
+  cursor: pointer;
+}
+
+.nav-brand h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+.logout-button {
+  padding: 0.5rem 1rem;
+  background-color: var(--error);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color var(--transition-fast);
+}
+
+.logout-button:hover {
+  background-color: #dc2626;
+}
+
 .comparison-container {
   display: grid;
-  grid-template-columns: 30% 30% 30%;
-  padding: 2rem;
-  height: 100vh;
+  grid-template-columns: minmax(0, 30%) minmax(0, 40%) minmax(0, 30%);
+  gap: 0.75rem;
+  padding: 0.75rem;
+  flex: 1;
+  min-height: 0;
   background-color: var(--neutral-50);
   overflow: hidden;
-  justify-content: space-between;
+  width: 100%;
 }
 
 .comparison-section {
   background: white;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 1rem;
+  padding: 0.5rem;
   position: relative;
-  height: calc(100vh - 4rem); /* Account for container padding */
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .middle-section {
@@ -315,13 +419,17 @@ watch(() => route.query, async (newQuery) => {
 }
 
 .pokemon-detail {
-  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .close-button {
   position: absolute;
-  top: -15px;
-  right: -5px;
+  top: 0px;
+  right: 5px;
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -340,35 +448,46 @@ watch(() => route.query, async (newQuery) => {
 
 .pokemon-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.75rem;
+  min-width: 0;
 }
 
 .pokemon-header h2 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: var(--neutral-900);
   margin-bottom: 0.5rem;
   text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .types {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: center;
+  padding: 0 0.5rem;
+  min-width: 0;
 }
 
 .type-badge {
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.75rem;
   border-radius: var(--border-radius-xl);
   color: white;
   font-weight: 500;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   text-transform: capitalize;
+  white-space: nowrap;
 }
 
 .pokemon-content {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.75rem;
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .pokemon-image {
@@ -377,24 +496,32 @@ watch(() => route.query, async (newQuery) => {
   align-items: center;
   background: var(--neutral-50);
   border-radius: var(--border-radius-lg);
-  padding: 1.5rem;
+  padding: 0.75rem;
+  flex-shrink: 0;
 }
 
 .sprite {
-  max-width: 200px;
+  max-width: 120px;
   height: auto;
 }
 
 .pokemon-info {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 0.75rem;
+  overflow-y: auto;
+  flex: 1;
+  min-width: 0;
 }
-
+.list-menu {
+  max-height: 60%;
+}
 .info-section {
   background: var(--neutral-50);
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: var(--border-radius-lg);
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .info-section h3 {
@@ -406,12 +533,18 @@ watch(() => route.query, async (newQuery) => {
 .info-section ul {
   list-style: none;
   padding: 0;
+  margin: 0;
+  min-width: 0;
 }
 
 .info-section li {
-  padding: 0.5rem 0;
+  padding: 0.25rem 0;
   color: var(--neutral-700);
   text-transform: capitalize;
+  font-size: 0.875rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stats {
@@ -444,48 +577,73 @@ watch(() => route.query, async (newQuery) => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
 }
 
 /* Pokemon Type Colors */
-.type-badge.normal { background-color: var(--type-normal); }
-.type-badge.fire { background-color: var(--type-fire); }
-.type-badge.water { background-color: var(--type-water); }
-.type-badge.electric { background-color: var(--type-electric); }
-.type-badge.grass { background-color: var(--type-grass); }
-.type-badge.ice { background-color: var(--type-ice); }
-.type-badge.fighting { background-color: var(--type-fighting); }
-.type-badge.poison { background-color: var(--type-poison); }
-.type-badge.ground { background-color: var(--type-ground); }
-.type-badge.flying { background-color: var(--type-flying); }
-.type-badge.psychic { background-color: var(--type-psychic); }
-.type-badge.bug { background-color: var(--type-bug); }
-.type-badge.rock { background-color: var(--type-rock); }
-.type-badge.ghost { background-color: var(--type-ghost); }
-.type-badge.dragon { background-color: var(--type-dragon); }
-.type-badge.dark { background-color: var(--type-dark); }
-.type-badge.steel { background-color: var(--type-steel); }
-.type-badge.fairy { background-color: var(--type-fairy); }
+.type-badge.normal {
+  background-color: var(--type-normal);
+}
+.type-badge.fire {
+  background-color: var(--type-fire);
+}
+.type-badge.water {
+  background-color: var(--type-water);
+}
+.type-badge.electric {
+  background-color: var(--type-electric);
+}
+.type-badge.grass {
+  background-color: var(--type-grass);
+}
+.type-badge.ice {
+  background-color: var(--type-ice);
+}
+.type-badge.fighting {
+  background-color: var(--type-fighting);
+}
+.type-badge.poison {
+  background-color: var(--type-poison);
+}
+.type-badge.ground {
+  background-color: var(--type-ground);
+}
+.type-badge.flying {
+  background-color: var(--type-flying);
+}
+.type-badge.psychic {
+  background-color: var(--type-psychic);
+}
+.type-badge.bug {
+  background-color: var(--type-bug);
+}
+.type-badge.rock {
+  background-color: var(--type-rock);
+}
+.type-badge.ghost {
+  background-color: var(--type-ghost);
+}
+.type-badge.dragon {
+  background-color: var(--type-dragon);
+}
+.type-badge.dark {
+  background-color: var(--type-dark);
+}
+.type-badge.steel {
+  background-color: var(--type-steel);
+}
+.type-badge.fairy {
+  background-color: var(--type-fairy);
+}
 
 .comparison-content {
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--neutral-300) var(--neutral-100);
-}
-
-.comparison-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.comparison-content::-webkit-scrollbar-track {
-  background: var(--neutral-100);
-  border-radius: 4px;
-}
-
-.comparison-content::-webkit-scrollbar-thumb {
-  background-color: var(--neutral-300);
-  border-radius: 4px;
+  padding: 0.5rem;
+  min-width: 0;
 }
 
 .comparison-header {
@@ -525,30 +683,32 @@ watch(() => route.query, async (newQuery) => {
 }
 
 .comparison-group {
-  margin-bottom: 2rem;
-}
-
-.comparison-group h3 {
-  color: var(--neutral-900);
   margin-bottom: 1rem;
-  font-size: 1.25rem;
-  text-align: center;
+  background: white;
+  padding: 0.75rem;
+  border-radius: var(--border-radius-lg);
+  min-width: 0;
 }
 
 .comparison-values {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
   background: var(--neutral-50);
-  padding: 1rem;
+  padding: 0.75rem;
   border-radius: var(--border-radius-md);
+  min-width: 0;
 }
 
 .value {
   flex: 1;
   text-align: center;
   font-weight: 500;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .value.left {
@@ -565,14 +725,20 @@ watch(() => route.query, async (newQuery) => {
   background-color: var(--neutral-300);
 }
 
-.types, .abilities {
+.types,
+.abilities {
   flex: 1;
   display: flex;
   flex-direction: row;
   gap: 0.5rem;
+  min-width: 0;
 }
 
-.types .type-badge, .abilities .ability-badge {
+.types .type-badge,
+.abilities .ability-badge {
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-</style> 
+</style>
