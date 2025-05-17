@@ -1,51 +1,51 @@
 :root {
-  /* Primary Colors */
-  --primary-color: #3B82F6;  /* Blue */
-  --primary-dark: #2563EB;
-  --primary-light: #60A5FA;
+  /* Primary Colors - Indigo */
+  --primary-color: #4F46E5;  /* Indigo 600 */
+  --primary-dark: #4338CA;   /* Indigo 700 */
+  --primary-light: #6366F1;  /* Indigo 500 */
 
-  /* Secondary Colors */
-  --secondary-color: #10B981;  /* Green */
-  --secondary-dark: #059669;
-  --secondary-light: #34D399;
+  /* Secondary Colors - Emerald */
+  --secondary-color: #059669;  /* Emerald 600 */
+  --secondary-dark: #047857;   /* Emerald 700 */
+  --secondary-light: #10B981;  /* Emerald 500 */
 
-  /* Neutral Colors */
-  --neutral-50: #F9FAFB;
-  --neutral-100: #F3F4F6;
-  --neutral-200: #E5E7EB;
-  --neutral-300: #D1D5DB;
-  --neutral-400: #9CA3AF;
-  --neutral-500: #6B7280;
-  --neutral-600: #4B5563;
-  --neutral-700: #374151;
-  --neutral-800: #1F2937;
-  --neutral-900: #111827;
+  /* Neutral Colors - Slate */
+  --neutral-50: #F8FAFC;
+  --neutral-100: #F1F5F9;
+  --neutral-200: #E2E8F0;
+  --neutral-300: #CBD5E1;
+  --neutral-400: #94A3B8;
+  --neutral-500: #64748B;
+  --neutral-600: #475569;
+  --neutral-700: #334155;
+  --neutral-800: #1E293B;
+  --neutral-900: #0F172A;
 
   /* Semantic Colors */
-  --success: #10B981;
-  --error: #EF4444;
-  --warning: #F59E0B;
-  --info: #3B82F6;
+  --success: #059669;    /* Emerald 600 */
+  --error: #DC2626;      /* Red 600 */
+  --warning: #D97706;    /* Amber 600 */
+  --info: #0284C7;       /* Sky 600 */
 
-  /* Pokemon Type Colors */
+  /* Pokemon Type Colors - Updated for better contrast */
   --type-normal: #A8A878;
-  --type-fire: #F08030;
-  --type-water: #6890F0;
-  --type-electric: #F8D030;
-  --type-grass: #78C850;
-  --type-ice: #98D8D8;
-  --type-fighting: #C03028;
-  --type-poison: #A040A0;
-  --type-ground: #E0C068;
-  --type-flying: #A890F0;
-  --type-psychic: #F85888;
-  --type-bug: #A8B820;
-  --type-rock: #B8A038;
-  --type-ghost: #705898;
-  --type-dragon: #7038F8;
-  --type-dark: #705848;
-  --type-steel: #B8B8D0;
-  --type-fairy: #EE99AC;
+  --type-fire: #F97316;    /* Orange 500 */
+  --type-water: #0EA5E9;   /* Sky 500 */
+  --type-electric: #EAB308; /* Yellow 500 */
+  --type-grass: #22C55E;   /* Green 500 */
+  --type-ice: #38BDF8;     /* Sky 400 */
+  --type-fighting: #EF4444; /* Red 500 */
+  --type-poison: #A855F7;  /* Purple 500 */
+  --type-ground: #F59E0B;  /* Amber 500 */
+  --type-flying: #8B5CF6;  /* Violet 500 */
+  --type-psychic: #EC4899; /* Pink 500 */
+  --type-bug: #84CC16;     /* Lime 500 */
+  --type-rock: #78716C;    /* Stone 500 */
+  --type-ghost: #7C3AED;   /* Violet 600 */
+  --type-dragon: #6366F1;  /* Indigo 500 */
+  --type-dark: #4B5563;    /* Gray 600 */
+  --type-steel: #94A3B8;   /* Slate 400 */
+  --type-fairy: #F472B6;   /* Pink 400 */
 
   /* Common Styles */
   --border-radius-sm: 4px;
@@ -83,15 +83,26 @@
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
   padding: 1.5rem;
+  border: 1px solid var(--neutral-200);
+  transition: all var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--neutral-300);
 }
 
 .btn {
-  padding: 0.5rem 1rem;
+  padding: 0.625rem 1.25rem;
   border-radius: var(--border-radius-md);
   border: none;
   cursor: pointer;
   font-weight: 500;
   transition: all var(--transition-fast);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .btn-primary {
@@ -101,6 +112,7 @@
 
 .btn-primary:hover {
   background-color: var(--primary-dark);
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
@@ -110,6 +122,7 @@
 
 .btn-secondary:hover {
   background-color: var(--secondary-dark);
+  transform: translateY(-1px);
 }
 
 .btn-danger {
@@ -118,5 +131,18 @@
 }
 
 .btn-danger:hover {
-  background-color: #DC2626;
+  background-color: #B91C1C;
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--neutral-300);
+  color: var(--neutral-700);
+}
+
+.btn-outline:hover {
+  background-color: var(--neutral-50);
+  border-color: var(--neutral-400);
+  color: var(--neutral-900);
 } 

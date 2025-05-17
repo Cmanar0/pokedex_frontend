@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <nav class="dashboard-nav">
-      <div class="nav-brand">
+      <div class="nav-brand" @click="router.push('/dashboard')">
         <h1>Pokédex</h1>
       </div>
       <div class="nav-actions">

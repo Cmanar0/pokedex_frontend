@@ -568,7 +568,7 @@ watch(() => route.query, async (newQuery) => {
 .types, .abilities {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.5rem;
 }
 
