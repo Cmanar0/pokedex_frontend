@@ -43,17 +43,16 @@ const handleLogout = async () => {
 </script>
 
 <style scoped>
-/* Keep your existing styles as-is */
 .dashboard {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background-color: var(--neutral-50);
   width: 100%;
 }
 
 .dashboard-nav {
   background: white;
   padding: 1rem 2rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -63,29 +62,29 @@ const handleLogout = async () => {
 .nav-brand h1 {
   margin: 0;
   font-size: 1.5rem;
-  color: #2c3e50;
+  color: var(--primary-color);
 }
 
 .logout-button {
   padding: 0.5rem 1rem;
-  background-color: #dc3545;
+  background-color: var(--error);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   font-size: 0.875rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.3s;
+  transition: background-color var(--transition-fast);
 }
 
 .logout-button:hover:not(:disabled) {
-  background-color: #c82333;
+  background-color: #DC2626;
 }
 
 .logout-button:disabled {
-  background-color: #a0aec0;
+  background-color: var(--neutral-400);
   cursor: not-allowed;
 }
 
@@ -99,20 +98,20 @@ const handleLogout = async () => {
 .welcome-card {
   background: white;
   padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
   margin-bottom: 2rem;
 }
 
 .welcome-card h2 {
   margin: 0;
-  color: #2c3e50;
+  color: var(--neutral-900);
   font-size: 1.5rem;
 }
 
 .welcome-card p {
   margin: 0.5rem 0 0;
-  color: #666;
+  color: var(--neutral-600);
 }
 
 .loading-spinner {

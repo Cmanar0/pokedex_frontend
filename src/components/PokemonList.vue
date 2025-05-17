@@ -1,124 +1,106 @@
 <template>
-  <div>
+  <div class="pokemon-list">
     <!-- Loading Spinner -->
-    <div v-if="isLoading" class="d-flex justify-content-center my-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
+    <div v-if="isLoading" class="loading-container">
+      <div class="loading-spinner"></div>
     </div>
 
     <!-- Pokémon Grid -->
-    <div v-else class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-4">
-      <div class="col" v-for="pokemon in results" :key="pokemon.name">
-        <div
-          class="card border-0 shadow-sm h-100 rounded-4 d-flex flex-column justify-content-between overflow-hidden text-center"
-        >
-          <!-- Image -->
-          <div
-            class="d-flex justify-content-center align-items-center bg-white border-bottom"
-            style="height: 260px"
-          >
-            <img
-              v-if="pokemon.sprite"
-              :src="pokemon.sprite"
-              :alt="pokemon.name"
-              class="img-fluid"
-              style="
-                max-height: 240px;
-                object-fit: contain;
-                width: auto;
-                min-width: 100%;
-              "
-            />
+    <div v-else class="pokemon-grid">
+      <div v-for="pokemon in results" :key="pokemon.name" class="pokemon-card">
+        <!-- Image -->
+        <div class="pokemon-image">
+          <img
+            v-if="pokemon.sprite"
+            :src="pokemon.sprite"
+            :alt="pokemon.name"
+            class="sprite"
+          />
+        </div>
+
+        <!-- Body -->
+        <div class="pokemon-content">
+          <div class="pokemon-header">
+            <h3 class="pokemon-name">{{ formatName(pokemon.name) }}</h3>
+
+            <!-- Types -->
+            <div class="pokemon-types">
+              <div class="section-label">Type:</div>
+              <div class="type-badges">
+                <span
+                  v-for="type in pokemon.types"
+                  :key="type"
+                  class="type-badge"
+                  :class="type.toLowerCase()"
+                >
+                  {{ type }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Abilities -->
+            <div class="pokemon-abilities">
+              <div class="section-label">Abilities:</div>
+              <div class="ability-badges">
+                <span
+                  v-for="ability in pokemon.abilities"
+                  :key="ability"
+                  class="ability-badge"
+                >
+                  {{ formatName(ability) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="pokemon-stats">
+              <div class="stat">
+                <span class="stat-label">Height:</span>
+                <span class="stat-value">{{ (pokemon.height / 10).toFixed(1) }}m</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Weight:</span>
+                <span class="stat-value">{{ (pokemon.weight / 10).toFixed(1) }}kg</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Body -->
-          <div
-            class="card-body d-flex flex-column justify-content-between px-4 py-3"
-          >
-            <div class="mb-3">
-              <h5 class="card-title text-capitalize fw-semibold mb-3">
-                {{ pokemon.name }}
-              </h5>
-
-              <!-- Types -->
-              <div class="mb-2">
-                <div class="small fw-bold text-muted">Type:</div>
-                <div class="d-flex justify-content-center flex-wrap gap-1">
-                  <span
-                    v-for="type in pokemon.types"
-                    :key="type"
-                    class="badge rounded-pill px-3 py-1"
-                    :class="typeColor(type)"
-                  >
-                    {{ type }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Abilities -->
-              <div class="mb-2">
-                <div class="small fw-bold text-muted">Abilities:</div>
-                <div class="d-flex justify-content-center flex-wrap gap-1">
-                  <span
-                    v-for="ability in pokemon.abilities"
-                    :key="ability"
-                    class="badge bg-secondary-subtle text-dark fw-normal"
-                  >
-                    {{ ability }}
-                  </span>
-                </div>
-              </div>
-
-              <!-- Stats -->
-              <div class="small text-muted mt-2">
-                <div>
-                  <strong>Height:</strong>
-                  {{ (pokemon.height / 10).toFixed(1) }} m
-                </div>
-                <div>
-                  <strong>Weight:</strong>
-                  {{ (pokemon.weight / 10).toFixed(1) }} kg
-                </div>
-              </div>
-            </div>
-
-            <!-- Buttons -->
-            <div class="mt-auto d-flex flex-column gap-2">
-              <router-link
-                :to="`/pokemon/${pokemon.name}`"
-                class="btn btn-sm btn-outline-primary"
-              >
-                See Details
-              </router-link>
-              <button
-                class="btn btn-sm"
-                :class="{
-                  'btn-success': !isFavorite(pokemon.name),
-                  'btn-danger': isFavorite(pokemon.name)
-                }"
-                @click="handleFavorite(pokemon.name)"
-                :disabled="!isAuthenticated"
-              >
-                {{ isFavorite(pokemon.name) ? 'Saved' : 'Save' }}
-              </button>
-            </div>
+          <!-- Buttons -->
+          <div class="pokemon-actions">
+            <router-link
+              :to="`/pokemon/${pokemon.name}`"
+              class="btn btn-secondary"
+              style="background-color: var(--secondary-color); color: white;"
+            >
+              See Details
+            </router-link>
+            <button
+              class="btn"
+              :class="{
+                'btn-primary': !isFavorite(pokemon.name),
+                'btn-secondary': isFavorite(pokemon.name)
+              }"
+              @click="handleFavorite(pokemon.name)"
+              :disabled="!isAuthenticated || profileStore.isUpdatingFavorite"
+            >
+              {{ isFavorite(pokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+            </button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-center my-4 gap-3">
+    <div class="pagination">
       <button
-        class="btn btn-outline-primary"
+        class="btn btn-primary"
         :disabled="!previous || isLoading"
         @click="changePage(page - 1)"
       >
         Previous
       </button>
       <button
-        class="btn btn-outline-primary"
+        class="btn btn-primary"
         :disabled="!next || isLoading"
         @click="changePage(page + 1)"
       >
@@ -157,6 +139,14 @@ const authStore = useAuthStore();
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isFavorite = (pokemonName) => profileStore.isFavorite(pokemonName);
+
+// Add formatName function
+const formatName = (name) => {
+  return name
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
 
 const fetchData = async () => {
   isLoading.value = true;
@@ -259,17 +249,183 @@ watch(
 </script>
 
 <style scoped>
-.card-title {
-  font-size: 1.25rem;
+.pokemon-list {
+  width: 100%;
+  padding: 1rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--neutral-200);
+  border-radius: 50%;
+  border-top-color: var(--primary-color);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pokemon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .pokemon-card {
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .pokemon-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
+
+.pokemon-image {
+  background: var(--neutral-50);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid var(--neutral-200);
+  height: 160px;
+  
+}
+
+.sprite {
+  width: auto;
+  min-height: 160px;
+  object-fit: contain;
+}
+
+.pokemon-content {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pokemon-header {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pokemon-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--neutral-900);
+  margin: 0;
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--neutral-600);
+  margin-bottom: 0.5rem;
+}
+
+.type-badges,
+.ability-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.type-badge {
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-xl);
+  color: white;
+  font-weight: 500;
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+
+.ability-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-md);
+  background-color: var(--neutral-100);
+  color: var(--neutral-700);
+  font-size: 0.875rem;
+  text-transform: capitalize;
+}
+
+.pokemon-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.stat {
+  background: var(--neutral-50);
+  padding: 0.75rem;
+  border-radius: var(--border-radius-md);
+  text-align: center;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--neutral-600);
+  margin-bottom: 0.25rem;
+}
+
+.stat-value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--neutral-900);
+}
+
+.pokemon-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Pokemon Type Colors */
+.type-badge.normal { background-color: var(--type-normal); }
+.type-badge.fire { background-color: var(--type-fire); }
+.type-badge.water { background-color: var(--type-water); }
+.type-badge.electric { background-color: var(--type-electric); }
+.type-badge.grass { background-color: var(--type-grass); }
+.type-badge.ice { background-color: var(--type-ice); }
+.type-badge.fighting { background-color: var(--type-fighting); }
+.type-badge.poison { background-color: var(--type-poison); }
+.type-badge.ground { background-color: var(--type-ground); }
+.type-badge.flying { background-color: var(--type-flying); }
+.type-badge.psychic { background-color: var(--type-psychic); }
+.type-badge.bug { background-color: var(--type-bug); }
+.type-badge.rock { background-color: var(--type-rock); }
+.type-badge.ghost { background-color: var(--type-ghost); }
+.type-badge.dragon { background-color: var(--type-dragon); }
+.type-badge.dark { background-color: var(--type-dark); }
+.type-badge.steel { background-color: var(--type-steel); }
+.type-badge.fairy { background-color: var(--type-fairy); }
 </style> 

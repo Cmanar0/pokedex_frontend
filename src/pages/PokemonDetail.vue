@@ -143,16 +143,17 @@ onMounted(async () => {
   text-align: center;
   padding: 2rem;
   font-size: 1.2rem;
+  color: var(--neutral-700);
 }
 
 .error {
-  color: #dc3545;
+  color: var(--error);
 }
 
 .pokemon-detail {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
   padding: 2rem;
 }
 
@@ -164,7 +165,8 @@ onMounted(async () => {
 .pokemon-header h1 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
-  color: #333;
+  color: var(--neutral-900);
+  text-transform: capitalize;
 }
 
 .types {
@@ -175,11 +177,32 @@ onMounted(async () => {
 
 .type-badge {
   padding: 0.5rem 1rem;
-  border-radius: 20px;
+  border-radius: var(--border-radius-xl);
   color: white;
-  font-weight: bold;
+  font-weight: 500;
+  font-size: 0.875rem;
   text-transform: capitalize;
 }
+
+/* Pokemon Type Colors */
+.type-badge.normal { background-color: var(--type-normal); }
+.type-badge.fire { background-color: var(--type-fire); }
+.type-badge.water { background-color: var(--type-water); }
+.type-badge.electric { background-color: var(--type-electric); }
+.type-badge.grass { background-color: var(--type-grass); }
+.type-badge.ice { background-color: var(--type-ice); }
+.type-badge.fighting { background-color: var(--type-fighting); }
+.type-badge.poison { background-color: var(--type-poison); }
+.type-badge.ground { background-color: var(--type-ground); }
+.type-badge.flying { background-color: var(--type-flying); }
+.type-badge.psychic { background-color: var(--type-psychic); }
+.type-badge.bug { background-color: var(--type-bug); }
+.type-badge.rock { background-color: var(--type-rock); }
+.type-badge.ghost { background-color: var(--type-ghost); }
+.type-badge.dragon { background-color: var(--type-dragon); }
+.type-badge.dark { background-color: var(--type-dark); }
+.type-badge.steel { background-color: var(--type-steel); }
+.type-badge.fairy { background-color: var(--type-fairy); }
 
 .pokemon-content {
   display: grid;
@@ -192,6 +215,9 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: var(--neutral-50);
+  border-radius: var(--border-radius-lg);
+  padding: 2rem;
 }
 
 .sprite {
@@ -205,8 +231,14 @@ onMounted(async () => {
   gap: 2rem;
 }
 
+.info-section {
+  background: var(--neutral-50);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-lg);
+}
+
 .info-section h2 {
-  color: #333;
+  color: var(--neutral-900);
   margin-bottom: 1rem;
   font-size: 1.5rem;
 }
@@ -218,7 +250,7 @@ onMounted(async () => {
 
 .info-section li {
   padding: 0.5rem 0;
-  color: #666;
+  color: var(--neutral-700);
   text-transform: capitalize;
 }
 
@@ -229,22 +261,23 @@ onMounted(async () => {
 }
 
 .stat {
-  background: #f8f9fa;
+  background: white;
   padding: 1rem;
-  border-radius: 4px;
+  border-radius: var(--border-radius-md);
   text-align: center;
 }
 
 .stat-label {
   display: block;
-  color: #666;
+  color: var(--neutral-600);
   margin-bottom: 0.5rem;
+  font-size: 0.875rem;
 }
 
 .stat-value {
   font-size: 1.2rem;
-  font-weight: bold;
-  color: #333;
+  font-weight: 600;
+  color: var(--neutral-900);
 }
 
 .actions {
@@ -254,65 +287,47 @@ onMounted(async () => {
 }
 
 .btn-back {
-  background-color: #6c757d;
-  color: white;
-  border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  background-color: var(--neutral-200);
+  color: var(--neutral-700);
+  border: none;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  transition: all var(--transition-fast);
 }
 
-.btn-back:hover {
-  background-color: #5a6268;
+.btn-back:hover:not(:disabled) {
+  background-color: var(--neutral-300);
 }
 
 .btn-favorite {
-  background-color: #4caf50;
+  padding: 0.75rem 1.5rem;
+  background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
+  border-radius: var(--border-radius-md);
   cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.2s;
+  font-weight: 500;
+  transition: all var(--transition-fast);
 }
 
-.btn-favorite:hover {
-  background-color: #45a049;
+.btn-favorite:hover:not(:disabled) {
+  background-color: var(--primary-dark);
 }
 
 .btn-favorite.is-favorite {
-  background-color: #dc3545;
+  background-color: var(--neutral-300);
+  color: var(--neutral-700);
 }
 
-.btn-favorite.is-favorite:hover {
-  background-color: #c82333;
+.btn-favorite.is-favorite:hover:not(:disabled) {
+  background-color: var(--neutral-400);
 }
 
 .btn-favorite:disabled {
-  background-color: #cccccc;
+  background-color: var(--neutral-300);
+  color: var(--neutral-500);
   cursor: not-allowed;
 }
-
-/* Type colors */
-.normal { background-color: #A8A878; }
-.fire { background-color: #F08030; }
-.water { background-color: #6890F0; }
-.electric { background-color: #F8D030; }
-.grass { background-color: #78C850; }
-.ice { background-color: #98D8D8; }
-.fighting { background-color: #C03028; }
-.poison { background-color: #A040A0; }
-.ground { background-color: #E0C068; }
-.flying { background-color: #A890F0; }
-.psychic { background-color: #F85888; }
-.bug { background-color: #A8B820; }
-.rock { background-color: #B8A038; }
-.ghost { background-color: #705898; }
-.dragon { background-color: #7038F8; }
-.dark { background-color: #705848; }
-.steel { background-color: #B8B8D0; }
-.fairy { background-color: #EE99AC; }
 </style>
