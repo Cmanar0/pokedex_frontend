@@ -283,6 +283,24 @@ const handleSelect = (pokemonName) => {
 .pokemon-list {
   width: 100%;
   padding: 1rem;
+  max-height: calc(100vh - 200px); /* Account for filters and padding */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--neutral-300) var(--neutral-100);
+}
+
+.pokemon-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pokemon-list::-webkit-scrollbar-track {
+  background: var(--neutral-100);
+  border-radius: 4px;
+}
+
+.pokemon-list::-webkit-scrollbar-thumb {
+  background-color: var(--neutral-300);
+  border-radius: 4px;
 }
 
 .loading-container {
