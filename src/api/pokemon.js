@@ -9,6 +9,10 @@ export const getPokemonDetail = (name) => {
   return apiService.get(`/pokemon/${name}/`);
 };
 
+export const getPokemonEvolutionChain = (name) => {
+  return apiService.get(`/pokemon/${name}/evolution/`);
+};
+
 export const getFavoritePokemonList = (params = {}) => {
   const profileStore = useProfileStore();
   const favoritePokemon = profileStore.favoritePokemon;

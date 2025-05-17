@@ -18,7 +18,12 @@
             <span class="close-icon">×</span>
           </button>
           <div class="pokemon-header">
-            <h2>{{ formatName(leftPokemon.name) }}</h2>
+            <router-link
+              :to="`/pokemon/${leftPokemon.name}`"
+              class="pokemon-name-link"
+            >
+              <h1>{{ formatName(leftPokemon.name) }}</h1>
+            </router-link>
             <div class="types">
               <span
                 v-for="type in leftPokemon.types"
@@ -52,11 +57,15 @@
                 <div class="stats">
                   <div class="stat">
                     <span class="stat-label">Height</span>
-                    <span class="stat-value">{{ leftPokemon.height / 10 }}m</span>
+                    <span class="stat-value"
+                      >{{ leftPokemon.height / 10 }}m</span
+                    >
                   </div>
                   <div class="stat">
                     <span class="stat-label">Weight</span>
-                    <span class="stat-value">{{ leftPokemon.weight / 10 }}kg</span>
+                    <span class="stat-value"
+                      >{{ leftPokemon.weight / 10 }}kg</span
+                    >
                   </div>
                 </div>
               </div>
@@ -65,12 +74,16 @@
                   class="btn"
                   :class="{
                     'btn-primary': !isFavorite(leftPokemon.name),
-                    'btn-secondary': isFavorite(leftPokemon.name)
+                    'btn-secondary': isFavorite(leftPokemon.name),
                   }"
                   @click="handleFavorite(leftPokemon.name)"
                   :disabled="profileStore.isUpdatingFavorite"
                 >
-                  {{ isFavorite(leftPokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+                  {{
+                    isFavorite(leftPokemon.name)
+                      ? 'Remove from Favorites'
+                      : 'Add to Favorites'
+                  }}
                 </button>
               </div>
             </div>
@@ -187,7 +200,12 @@
             <span class="close-icon">×</span>
           </button>
           <div class="pokemon-header">
-            <h2>{{ formatName(rightPokemon.name) }}</h2>
+            <router-link
+              :to="`/pokemon/${rightPokemon.name}`"
+              class="pokemon-name-link"
+            >
+              <h1>{{ formatName(rightPokemon.name) }}</h1>
+            </router-link>
             <div class="types">
               <span
                 v-for="type in rightPokemon.types"
@@ -221,11 +239,15 @@
                 <div class="stats">
                   <div class="stat">
                     <span class="stat-label">Height</span>
-                    <span class="stat-value">{{ rightPokemon.height / 10 }}m</span>
+                    <span class="stat-value"
+                      >{{ rightPokemon.height / 10 }}m</span
+                    >
                   </div>
                   <div class="stat">
                     <span class="stat-label">Weight</span>
-                    <span class="stat-value">{{ rightPokemon.weight / 10 }}kg</span>
+                    <span class="stat-value"
+                      >{{ rightPokemon.weight / 10 }}kg</span
+                    >
                   </div>
                 </div>
               </div>
@@ -234,12 +256,16 @@
                   class="btn"
                   :class="{
                     'btn-primary': !isFavorite(rightPokemon.name),
-                    'btn-secondary': isFavorite(rightPokemon.name)
+                    'btn-secondary': isFavorite(rightPokemon.name),
                   }"
                   @click="handleFavorite(rightPokemon.name)"
                   :disabled="profileStore.isUpdatingFavorite"
                 >
-                  {{ isFavorite(rightPokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+                  {{
+                    isFavorite(rightPokemon.name)
+                      ? 'Remove from Favorites'
+                      : 'Add to Favorites'
+                  }}
                 </button>
               </div>
             </div>
@@ -790,5 +816,24 @@ watch(
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.pokemon-name-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.pokemon-name-link:hover {
+  color: var(--primary-color);
+}
+
+.pokemon-name-link h2 h1 {
+  margin: 0 0 0.5rem 0;
+  cursor: pointer;
+}
+
+.pokemon-name-link h2:hover {
+  color: var(--primary-color);
 }
 </style>

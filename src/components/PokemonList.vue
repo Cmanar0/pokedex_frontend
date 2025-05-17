@@ -21,7 +21,9 @@
         <!-- Body -->
         <div class="pokemon-content">
           <div class="pokemon-header">
-            <h3 class="pokemon-name">{{ formatName(pokemon.name) }}</h3>
+            <router-link :to="`/pokemon/${pokemon.name}`" class="pokemon-name-link">
+              <h3>{{ formatName(pokemon.name) }}</h3>
+            </router-link>
 
             <!-- Types -->
             <div class="pokemon-types">
@@ -430,13 +432,19 @@ watch([() => props.search, () => props.type, () => props.ability], () => {
   gap: 1rem;
 }
 
-.pokemon-name {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--neutral-900);
+.pokemon-name-link {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.2s;
+}
+
+.pokemon-name-link:hover {
+  color: var(--primary-color);
+}
+
+.pokemon-name-link h3 {
   margin: 0;
-  text-align: center;
-  text-transform: capitalize;
+  cursor: pointer;
 }
 
 .section-label {
