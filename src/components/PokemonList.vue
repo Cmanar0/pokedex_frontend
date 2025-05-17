@@ -403,7 +403,7 @@ watch([() => props.search, () => props.type, () => props.ability], () => {
 }
 
 .pokemon-image {
-  background: var(--neutral-50);
+  background: var(--neutral-100);
   padding: 1.5rem;
   display: flex;
   justify-content: center;

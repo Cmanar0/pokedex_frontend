@@ -13,7 +13,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   width: 100%;
   min-height: 100vh;
   margin: 0;
@@ -54,7 +55,12 @@ a:hover {
 }
 
 /* Global heading styles */
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--neutral-900);
   line-height: 1.2;
   margin-bottom: 0.5em;

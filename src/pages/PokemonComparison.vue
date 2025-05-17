@@ -439,7 +439,7 @@ watch(
   padding: 0.75rem;
   flex: 1;
   min-height: 0;
-  background-color: var(--neutral-50);
+  background-color: var(--neutral-300);
   overflow: hidden;
   width: 100%;
 }
@@ -551,7 +551,7 @@ watch(
   display: flex;
   justify-content: center;
   align-items: center;
-  background: var(--neutral-50);
+  background: var(--neutral-100);
   border-radius: var(--border-radius-lg);
   padding: 0.75rem;
   flex-shrink: 0;
@@ -573,7 +573,7 @@ watch(
 }
 
 .info-section {
-  background: var(--neutral-50);
+  background: var(--neutral-100);
   padding: 0.75rem;
   border-radius: var(--border-radius-lg);
   flex-shrink: 0;

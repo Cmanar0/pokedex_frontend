@@ -1,8 +1,6 @@
 <template>
   <div class="pokemon-detail-fullscreen">
-    <div v-if="loading" class="loading">
-      Loading...
-    </div>
+    <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="error" class="error">
       {{ error }}
     </div>
@@ -55,8 +53,12 @@
 
         <div class="evolution-chain-row" v-if="evolutionChain">
           <h2>Evolution Chain</h2>
-          <div v-if="evolutionChainLoading" class="loading">Loading evolution chain...</div>
-          <div v-else-if="evolutionChainError" class="error">{{ evolutionChainError }}</div>
+          <div v-if="evolutionChainLoading" class="loading">
+            Loading evolution chain...
+          </div>
+          <div v-else-if="evolutionChainError" class="error">
+            {{ evolutionChainError }}
+          </div>
           <div v-else class="evolution-steps-row">
             <div
               v-for="(pokemon, index) in renderEvolutionChain(evolutionChain)"
@@ -64,7 +66,11 @@
               class="evolution-step-row"
             >
               <span class="pokemon-name-pill">{{ formatName(pokemon) }}</span>
-              <span v-if="index < renderEvolutionChain(evolutionChain).length - 1" class="evolution-arrow-row">→</span>
+              <span
+                v-if="index < renderEvolutionChain(evolutionChain).length - 1"
+                class="evolution-arrow-row"
+                >→</span
+              >
             </div>
           </div>
         </div>
@@ -80,7 +86,7 @@
           class="btn"
           :class="{
             'btn-primary': !isFavorite,
-            'btn-secondary': isFavorite
+            'btn-secondary': isFavorite,
           }"
           @click="handleFavorite"
           :disabled="!isAuthenticated || profileStore.isUpdatingFavorite"
@@ -115,13 +121,15 @@ const evolutionChainError = ref(null);
 
 // ===================== COMPUTED =====================
 const isAuthenticated = computed(() => authStore.isAuthenticated);
-const isFavorite = computed(() => profileStore.isFavorite(route.params.name as string));
+const isFavorite = computed(() =>
+  profileStore.isFavorite(route.params.name as string)
+);
 
 // ===================== METHODS =====================
 const formatName = (name) => {
   return name
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
 
@@ -139,7 +147,8 @@ const fetchEvolutionChain = async (name) => {
     evolutionChainError.value = null;
     evolutionChain.value = await getPokemonEvolutionChain(name);
   } catch (err) {
-    evolutionChainError.value = err.message || 'Failed to fetch evolution chain';
+    evolutionChainError.value =
+      err.message || 'Failed to fetch evolution chain';
   } finally {
     evolutionChainLoading.value = false;
   }
@@ -147,15 +156,15 @@ const fetchEvolutionChain = async (name) => {
 
 const renderEvolutionChain = (chain) => {
   if (!chain) return null;
-  
+
   const result = [];
   let current = chain;
-  
+
   while (current) {
     result.push(current.name);
     current = current.evolves_to?.[0];
   }
-  
+
   return result;
 };
 
@@ -182,7 +191,7 @@ onMounted(async () => {
   min-height: 100vh;
   height: 100vh;
   width: 100vw;
-  background: #f8fafc;
+  background: var(--neutral-300);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -193,7 +202,8 @@ onMounted(async () => {
 .pokemon-detail-card {
   background: white;
   border-radius: 1.5rem;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
   padding: 2rem;
   max-width: 900px;
   width: 100%;
@@ -240,7 +250,7 @@ onMounted(async () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #f1f5f9;
+  background: var(--neutral-100);
   border-radius: 1rem;
   padding: 1.5rem;
   min-width: 180px;
@@ -283,7 +293,7 @@ onMounted(async () => {
 }
 
 .info-section {
-  background: #f8fafc;
+  background: var(--neutral-100);
   padding: 1.25rem;
   border-radius: 0.75rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
@@ -341,7 +351,7 @@ onMounted(async () => {
 
 .evolution-chain-row {
   width: 100%;
-  background: #f1f5f9;
+  background: var(--neutral-100);
   border-radius: 0.75rem;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   padding: 1.25rem;
@@ -466,22 +476,58 @@ onMounted(async () => {
 }
 
 /* Type badge colors */
-.type-badge.normal { background-color: #a8a878; }
-.type-badge.fire { background-color: #f08030; }
-.type-badge.water { background-color: #6890f0; }
-.type-badge.electric { background-color: #f8d030; }
-.type-badge.grass { background-color: #78c850; }
-.type-badge.ice { background-color: #98d8d8; }
-.type-badge.fighting { background-color: #c03028; }
-.type-badge.poison { background-color: #a040a0; }
-.type-badge.ground { background-color: #e0c068; }
-.type-badge.flying { background-color: #a890f0; }
-.type-badge.psychic { background-color: #f85888; }
-.type-badge.bug { background-color: #a8b820; }
-.type-badge.rock { background-color: #b8a038; }
-.type-badge.ghost { background-color: #705898; }
-.type-badge.dragon { background-color: #7038f8; }
-.type-badge.dark { background-color: #705848; }
-.type-badge.steel { background-color: #b8b8d0; }
-.type-badge.fairy { background-color: #ee99ac; }
+.type-badge.normal {
+  background-color: #a8a878;
+}
+.type-badge.fire {
+  background-color: #f08030;
+}
+.type-badge.water {
+  background-color: #6890f0;
+}
+.type-badge.electric {
+  background-color: #f8d030;
+}
+.type-badge.grass {
+  background-color: #78c850;
+}
+.type-badge.ice {
+  background-color: #98d8d8;
+}
+.type-badge.fighting {
+  background-color: #c03028;
+}
+.type-badge.poison {
+  background-color: #a040a0;
+}
+.type-badge.ground {
+  background-color: #e0c068;
+}
+.type-badge.flying {
+  background-color: #a890f0;
+}
+.type-badge.psychic {
+  background-color: #f85888;
+}
+.type-badge.bug {
+  background-color: #a8b820;
+}
+.type-badge.rock {
+  background-color: #b8a038;
+}
+.type-badge.ghost {
+  background-color: #705898;
+}
+.type-badge.dragon {
+  background-color: #7038f8;
+}
+.type-badge.dark {
+  background-color: #705848;
+}
+.type-badge.steel {
+  background-color: #b8b8d0;
+}
+.type-badge.fairy {
+  background-color: #ee99ac;
+}
 </style>

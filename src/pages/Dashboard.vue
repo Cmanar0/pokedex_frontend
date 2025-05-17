@@ -45,7 +45,7 @@ const handleLogout = async () => {
 <style scoped>
 .dashboard {
   min-height: 100vh;
-  background-color: var(--neutral-50);
+  background-color: var(--neutral-300);
   width: 100%;
 }
 
@@ -80,7 +80,7 @@ const handleLogout = async () => {
 }
 
 .logout-button:hover:not(:disabled) {
-  background-color: #DC2626;
+  background-color: #dc2626;
 }
 
 .logout-button:disabled {
