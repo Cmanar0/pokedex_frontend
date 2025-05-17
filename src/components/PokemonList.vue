@@ -283,8 +283,8 @@ const handleSelect = (pokemonName) => {
 .pokemon-list {
   width: 100%;
   padding: 1rem;
-  max-height: calc(100vh - 200px); /* Account for filters and padding */
-  overflow-y: auto;
+  max-height: v-bind('isComparisonMode ? "calc(100vh - 200px)" : "none"');
+  overflow-y: v-bind('isComparisonMode ? "auto" : "visible"');
   scrollbar-width: thin;
   scrollbar-color: var(--neutral-300) var(--neutral-100);
 }

@@ -277,18 +277,18 @@ watch(() => route.query, async (newQuery) => {
 .comparison-container {
   display: grid;
   grid-template-columns: 30% 30% 30%;
-  gap: 2rem;
   padding: 2rem;
   height: 100vh;
   background-color: var(--neutral-50);
   overflow: hidden;
+  justify-content: space-between;
 }
 
 .comparison-section {
   background: white;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 1.5rem;
+  padding: 1rem;
   position: relative;
   height: calc(100vh - 4rem); /* Account for container padding */
   overflow: hidden;
@@ -320,8 +320,8 @@ watch(() => route.query, async (newQuery) => {
 
 .close-button {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: -15px;
+  right: -5px;
   background: none;
   border: none;
   font-size: 1.5rem;
@@ -330,6 +330,7 @@ watch(() => route.query, async (newQuery) => {
   padding: 0.5rem;
   line-height: 1;
   z-index: 1;
+  scale: 1.5;
   transition: color var(--transition-fast);
 }
 
@@ -392,7 +393,7 @@ watch(() => route.query, async (newQuery) => {
 
 .info-section {
   background: var(--neutral-50);
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: var(--border-radius-lg);
 }
 
