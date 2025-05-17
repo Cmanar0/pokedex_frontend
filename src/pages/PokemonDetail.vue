@@ -57,7 +57,7 @@
 
       <div class="pokemon-actions">
         <router-link
-          :to="`/compare?first=${pokemon.name}`"
+          :to="`/compare?left=${pokemon.name}`"
           class="btn btn-primary"
         >
           Compare
