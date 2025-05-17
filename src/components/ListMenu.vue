@@ -75,6 +75,9 @@
         :type="selectedType"
         :ability="selectedAbility"
         :show-favorites-only="showFavoritesOnly"
+        :is-comparison-mode="isComparisonMode"
+        :selected-position="selectedPosition"
+        @select-pokemon="handlePokemonSelect"
       />
     </div>
   </div>
@@ -85,6 +88,18 @@ import { ref, onMounted, computed, watch } from 'vue';
 import debounce from 'lodash.debounce';
 import PokemonList from './PokemonList.vue';
 import { useAuthStore } from '../stores/auth';
+
+const props = defineProps({
+  isComparisonMode: {
+    type: Boolean,
+    default: false
+  },
+  selectedPosition: {
+    type: String,
+    default: null,
+    validator: (value) => ['left', 'right', null].includes(value)
+  }
+});
 
 const current = ref('pokemon');
 const searchInput = ref('');
@@ -447,7 +462,7 @@ const debouncedSearch = debounce(() => {
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 
-const emit = defineEmits(['search', 'type-change', 'ability-change', 'favorites-change']);
+const emit = defineEmits(['search', 'type-change', 'ability-change', 'favorites-change', 'select-pokemon']);
 
 const pokemonListRef = ref(null);
 
@@ -455,6 +470,17 @@ const handleFavoritesChange = () => {
   // Call the child's refresh method directly
   pokemonListRef.value?.refresh();
 };
+
+const handlePokemonSelect = (pokemonName) => {
+  emit('select-pokemon', pokemonName);
+};
+
+watch([search, selectedType, selectedAbility, showFavoritesOnly], () => {
+  // Reset the list when filters change
+  if (pokemonListRef.value) {
+    pokemonListRef.value.refresh();
+  }
+});
 </script>
 
 <style scoped>

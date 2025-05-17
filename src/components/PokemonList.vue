@@ -67,31 +67,47 @@
 
           <!-- Buttons -->
           <div class="pokemon-actions">
-            <router-link
-              :to="`/pokemon/${pokemon.name}`"
-              class="btn btn-secondary"
-              style="background-color: var(--secondary-color); color: white;"
-            >
-              See Details
-            </router-link>
-            <button
-              class="btn"
-              :class="{
-                'btn-primary': !isFavorite(pokemon.name),
-                'btn-secondary': isFavorite(pokemon.name)
-              }"
-              @click="handleFavorite(pokemon.name)"
-              :disabled="!isAuthenticated || profileStore.isUpdatingFavorite"
-            >
-              {{ isFavorite(pokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
-            </button>
+            <template v-if="isComparisonMode">
+              <button
+                class="btn btn-primary"
+                @click="handleSelect(pokemon.name)"
+              >
+                Select for {{ selectedPosition === 'left' ? 'Left' : 'Right' }}
+              </button>
+            </template>
+            <template v-else>
+              <router-link
+                :to="`/pokemon/${pokemon.name}`"
+                class="btn btn-secondary"
+                style="background-color: var(--secondary-color); color: white;"
+              >
+                See Details
+              </router-link>
+              <router-link
+                :to="`/compare?left=${pokemon.name}`"
+                class="btn btn-primary"
+              >
+                Compare
+              </router-link>
+              <button
+                class="btn"
+                :class="{
+                  'btn-primary': !isFavorite(pokemon.name),
+                  'btn-secondary': isFavorite(pokemon.name)
+                }"
+                @click="handleFavorite(pokemon.name)"
+                :disabled="!isAuthenticated || profileStore.isUpdatingFavorite"
+              >
+                {{ isFavorite(pokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+              </button>
+            </template>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Pagination -->
-    <div class="pagination">
+    <div v-if="!isComparisonMode" class="pagination">
       <button
         class="btn btn-primary"
         :disabled="!previous || isLoading"
@@ -124,8 +140,19 @@ const props = defineProps({
   showFavoritesOnly: {
     type: Boolean,
     default: false
+  },
+  isComparisonMode: {
+    type: Boolean,
+    default: false
+  },
+  selectedPosition: {
+    type: String,
+    default: null,
+    validator: (value) => ['left', 'right', null].includes(value)
   }
 });
+
+const emit = defineEmits(['select-pokemon']);
 
 const results = ref([]);
 const page = ref(1);
@@ -246,6 +273,10 @@ watch(
     fetchData();
   }
 );
+
+const handleSelect = (pokemonName) => {
+  emit('select-pokemon', pokemonName);
+};
 </script>
 
 <style scoped>

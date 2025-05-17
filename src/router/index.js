@@ -4,6 +4,7 @@ import Login from '../pages/Login.vue';
 import Register from '../pages/Register.vue';
 import Dashboard from '../pages/Dashboard.vue';
 import PokemonDetail from '../pages/PokemonDetail.vue';
+import PokemonComparison from '../pages/PokemonComparison.vue'
 
 const routes = [
   {
@@ -45,6 +46,11 @@ const routes = [
       requiresAuth: false,
       title: 'Register',
     },
+  },
+  {
+    path: '/compare',
+    name: 'compare',
+    component: PokemonComparison
   },
   {
     path: '/:pathMatch(.*)*',

@@ -55,20 +55,21 @@
         </div>
       </div>
 
-      <div class="actions">
-        <button 
-          @click="$router.back()" 
-          class="btn-back"
-          :disabled="profileStore.isUpdatingFavorite"
+      <div class="pokemon-actions">
+        <router-link
+          :to="`/compare?first=${pokemon.name}`"
+          class="btn btn-primary"
         >
-          Back to List
-        </button>
-        <button 
-          v-if="isAuthenticated"
-          @click="handleFavorite" 
-          class="btn-favorite"
-          :class="{ 'is-favorite': isFavorite }"
-          :disabled="profileStore.isUpdatingFavorite || loading"
+          Compare
+        </router-link>
+        <button
+          class="btn"
+          :class="{
+            'btn-primary': !isFavorite,
+            'btn-secondary': isFavorite
+          }"
+          @click="handleFavorite"
+          :disabled="!isAuthenticated || profileStore.isUpdatingFavorite"
         >
           {{ isFavorite ? 'Remove from Favorites' : 'Add to Favorites' }}
         </button>
@@ -280,28 +281,13 @@ onMounted(async () => {
   color: var(--neutral-900);
 }
 
-.actions {
+.pokemon-actions {
   display: flex;
   gap: 1rem;
   justify-content: center;
 }
 
-.btn-back {
-  padding: 0.75rem 1.5rem;
-  background-color: var(--neutral-200);
-  color: var(--neutral-700);
-  border: none;
-  border-radius: var(--border-radius-md);
-  cursor: pointer;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-}
-
-.btn-back:hover:not(:disabled) {
-  background-color: var(--neutral-300);
-}
-
-.btn-favorite {
+.btn-primary {
   padding: 0.75rem 1.5rem;
   background-color: var(--primary-color);
   color: white;
@@ -312,20 +298,26 @@ onMounted(async () => {
   transition: all var(--transition-fast);
 }
 
-.btn-favorite:hover:not(:disabled) {
+.btn-primary:hover:not(:disabled) {
   background-color: var(--primary-dark);
 }
 
-.btn-favorite.is-favorite {
-  background-color: var(--neutral-300);
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  background-color: var(--neutral-200);
   color: var(--neutral-700);
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all var(--transition-fast);
 }
 
-.btn-favorite.is-favorite:hover:not(:disabled) {
-  background-color: var(--neutral-400);
+.btn-secondary:hover:not(:disabled) {
+  background-color: var(--neutral-300);
 }
 
-.btn-favorite:disabled {
+.btn-secondary:disabled {
   background-color: var(--neutral-300);
   color: var(--neutral-500);
   cursor: not-allowed;

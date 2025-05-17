@@ -18,7 +18,6 @@ export const useAuthStore = defineStore('auth', {
   getters: {
     isLoggedIn: (state) => state.isAuthenticated,
     currentUser: (state) => state.user,
-    authError: (state) => state.authError,
     loadingState: (state) => state.isLoading,
   },
 
@@ -83,6 +82,7 @@ export const useAuthStore = defineStore('auth', {
         await apiLogout();
         this.user = null;
         this.isAuthenticated = false;
+        this.authError = null;
       } catch (err) {
         this.authError = err.message || 'Logout failed';
       } finally {
