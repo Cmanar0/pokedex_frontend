@@ -92,7 +92,10 @@
 
 <script setup>
 import { ref, onMounted, watch, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
 import { getPokemonList } from '../api/pokemon';
+
+const router = useRouter();
 
 const props = defineProps({
   searchQuery: String,
@@ -189,11 +192,14 @@ const toggleFavorite = (pokemon) => {
 };
 
 const viewDetails = (pokemon) => {
-  emit('view-details', pokemon);
+  router.push(`/pokemon/${pokemon.name}`);
 };
 
 const comparePokemon = (pokemon) => {
-  emit('compare', pokemon);
+  router.push({
+    path: '/compare',
+    query: { left: pokemon.name }
+  });
 };
 
 // Watch for filter changes
