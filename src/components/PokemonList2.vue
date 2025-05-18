@@ -131,18 +131,34 @@ const profileStore = useProfileStore();
 const authStore = useAuthStore();
 
 const props = defineProps({
-  searchQuery: String,
-  selectedType: String,
-  selectedAbility: String,
-  currentPage: Number,
+  searchQuery: {
+    type: String,
+    default: ''
+  },
+  selectedType: {
+    type: String,
+    default: ''
+  },
+  selectedAbility: {
+    type: String,
+    default: ''
+  },
+  currentPage: {
+    type: Number,
+    default: 1
+  },
   isComparisonMode: {
     type: Boolean,
-    default: false,
+    default: false
   },
   isFavoriteMode: {
     type: Boolean,
-    default: false,
+    default: false
   },
+  pokemons: {
+    type: Array,
+    default: () => []
+  }
 });
 
 const emit = defineEmits([
@@ -325,6 +341,22 @@ watch(
     refreshPokemonList();
   }
 );
+
+// Watch for changes in favorite mode
+watch(() => props.isFavoriteMode, (newValue) => {
+  if (newValue) {
+    // When switching to favorite mode, use the provided pokemons array
+    pokemons.value = props.pokemons;
+    emit('update:pokemons', pokemons.value);
+  }
+});
+
+// Watch for changes in the provided pokemons array when in favorite mode
+watch(() => props.pokemons, (newValue) => {
+  if (props.isFavoriteMode) {
+    pokemons.value = newValue;
+  }
+}, { deep: true });
 
 onMounted(async () => {
   refreshPokemonList();

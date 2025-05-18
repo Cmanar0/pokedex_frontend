@@ -95,8 +95,9 @@
       :current-page="currentPage"
       :is-comparison-mode="props.isComparisonMode"
       :is-favorite-mode="true"
+      :pokemons="filteredPokemon"
       @update:current-page="currentPage = $event"
-      @update:pokemons="pokemon = $event"
+      @update:pokemons="handlePokemonUpdate"
       @select-pokemon="emit('select-pokemon', $event)"
     />
   </div>
@@ -132,11 +133,31 @@ const types = ref([]);
 const abilities = ref([]);
 const currentPage = ref(1);
 const pokemon = ref([]);
+const favoritePokemon = ref([]);
 const profileStore = useProfileStore();
 const isLoadingTypes = ref(false);
 const isLoadingAbilities = ref(false);
 const isAbilityDropdownOpen = ref(false);
 const abilitySearchQuery = ref('');
+
+const filteredPokemon = computed(() => {
+  if (!Array.isArray(pokemon.value)) return [];
+  
+  return pokemon.value.filter(pokemon => {
+    // Search query filter
+    const matchesSearch = pokemon.name.toLowerCase().includes(searchQuery.value.toLowerCase());
+    
+    // Type filter
+    const matchesType = !selectedType.value || 
+      pokemon.types.some(type => type.toLowerCase() === selectedType.value.toLowerCase());
+    
+    // Ability filter
+    const matchesAbility = !selectedAbility.value || 
+      pokemon.abilities.some(ability => ability.toLowerCase() === selectedAbility.value.toLowerCase());
+    
+    return matchesSearch && matchesType && matchesAbility;
+  });
+});
 
 const filteredAbilities = computed(() => {
   if (!abilitySearchQuery.value) return abilities.value;
@@ -185,11 +206,21 @@ const fetchTypesAndAbilities = async () => {
   }
 };
 
+const fetchFavoritePokemon = async () => {
+  try {
+    const response = await getFavoritePokemonList();
+    favoritePokemon.value = response;
+  } catch (err) {
+    console.error('Error loading favorite Pokémon:', err);
+  }
+};
+
 onMounted(async () => {
   try {
     await Promise.all([
       fetchTypesAndAbilities(),
-      profileStore.fetchProfile()
+      profileStore.fetchProfile(),
+      fetchFavoritePokemon()
     ]);
     document.addEventListener('click', handleClickOutside);
   } catch (err) {
@@ -200,19 +231,45 @@ onMounted(async () => {
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside);
 });
+
+// Add watchers for filter inputs
+watch(searchQuery, (newValue) => {
+  console.log('Search Query:', newValue);
+});
+
+watch(selectedType, (newValue) => {
+  console.log('Selected Type:', newValue);
+});
+
+watch(selectedAbility, (newValue) => {
+  console.log('Selected Ability:', newValue);
+});
+
+// Also log the filtered results
+watch(filteredPokemon, (newValue) => {
+  console.log('Filtered Pokémon Count:', newValue.length);
+  console.log('Filtered Pokémon:', newValue);
+}, { deep: true });
+
+// Handle initial pokemon list update
+const handlePokemonUpdate = (newPokemon) => {
+  // Force reactivity by creating a new array
+  pokemon.value = [...newPokemon];
+};
 </script>
 
 <style scoped>
 .pokemon-filter {
-  padding: 1rem;
+  width: 100%;
 }
 
 .search-section {
   background: white;
-  padding: 1rem;
+  padding: 1.5rem;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
 }
+
 
 .select-loading {
   position: absolute;
