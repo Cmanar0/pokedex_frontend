@@ -20,57 +20,124 @@
       <div class="comparison-container">
         <!-- Left Side -->
         <div class="comparison-side">
-          <div class="view-selector">
-            <button
-              @click="leftView = 'all'"
-              :class="['view-button', { active: leftView === 'all' }]"
-            >
-              All Pokémon
-            </button>
-            <button
-              @click="leftView = 'favorites'"
-              :class="['view-button', { active: leftView === 'favorites' }]"
-            >
-              Favorite Pokémon
-            </button>
-          </div>
-          <AllPokFilter
-            v-if="leftView === 'all'"
-            :isComparisonMode="true"
-            :selectedPokemon="leftPokemon"
-            @select-pokemon="handleLeftSelect"
-          />
-          <FavPokFilter
-            v-else
-            :isComparisonMode="true"
-            :selectedPokemon="leftPokemon"
-            @select-pokemon="handleLeftSelect"
-          />
+          <template v-if="!leftPokemon">
+            <div class="view-selector">
+              <button
+                @click="leftView = 'all'"
+                :class="['view-button', { active: leftView === 'all' }]"
+              >
+                All Pokémon
+              </button>
+              <button
+                @click="leftView = 'favorites'"
+                :class="['view-button', { active: leftView === 'favorites' }]"
+              >
+                Favorite Pokémon
+              </button>
+            </div>
+            <AllPokFilter
+              v-if="leftView === 'all'"
+              :isComparisonMode="true"
+              :selectedPokemon="leftPokemon"
+              @select-pokemon="handleLeftSelect"
+            />
+            <FavPokFilter
+              v-else
+              :isComparisonMode="true"
+              :selectedPokemon="leftPokemon"
+              @select-pokemon="handleLeftSelect"
+            />
+          </template>
+          <template v-else>
+            <div class="selected-pokemon">
+              <button class="unselect-button" @click="leftPokemon = null">
+                <i class="bi bi-x-lg"></i>
+              </button>
+              <div class="pokemon-header">
+                <img
+                  :src="leftPokemon.sprite"
+                  :alt="leftPokemon.name"
+                  class="pokemon-sprite"
+                />
+                <h3 class="pokemon-name">{{ leftPokemon.name }}</h3>
+              </div>
+              <div class="pokemon-types">
+                <span
+                  v-for="type in leftPokemon.types"
+                  :key="type"
+                  :class="['type-badge', type.toLowerCase()]"
+                >
+                  {{ type }}
+                </span>
+              </div>
+              <div class="pokemon-details">
+                <div class="detail-item">
+                  <span class="detail-label">Height:</span>
+                  <span class="detail-value"
+                    >{{ leftPokemon.height / 10 }}m</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Weight:</span>
+                  <span class="detail-value"
+                    >{{ leftPokemon.weight / 10 }}kg</span
+                  >
+                </div>
+              </div>
+              <div class="pokemon-abilities">
+                <h4>Abilities:</h4>
+                <div class="ability-list">
+                  <span
+                    v-for="ability in leftPokemon.abilities"
+                    :key="ability"
+                    class="ability-badge"
+                  >
+                    {{
+                      ability
+                        .split('-')
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(' ')
+                    }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
 
         <!-- Middle Section -->
         <div class="comparison-section middle-section">
           <div v-if="leftPokemon && rightPokemon" class="comparison-content">
-            <div class="comparison-header">
+            <!-- <div class="comparison-header">
               <h2>Comparison</h2>
-            </div>
+            </div> -->
 
             <!-- Stats Comparison -->
             <div class="comparison-group">
               <h3>Height</h3>
               <div class="comparison-values">
-                <span class="value left">{{ (leftPokemon.height / 10).toFixed(1) }}m</span>
+                <span class="value left"
+                  >{{ (leftPokemon.height / 10).toFixed(1) }}m</span
+                >
                 <div class="divider"></div>
-                <span class="value right">{{ (rightPokemon.height / 10).toFixed(1) }}m</span>
+                <span class="value right"
+                  >{{ (rightPokemon.height / 10).toFixed(1) }}m</span
+                >
               </div>
             </div>
 
             <div class="comparison-group">
               <h3>Weight</h3>
               <div class="comparison-values">
-                <span class="value left">{{ (leftPokemon.weight / 10).toFixed(1) }}kg</span>
+                <span class="value left"
+                  >{{ (leftPokemon.weight / 10).toFixed(1) }}kg</span
+                >
                 <div class="divider"></div>
-                <span class="value right">{{ (rightPokemon.weight / 10).toFixed(1) }}kg</span>
+                <span class="value right"
+                  >{{ (rightPokemon.weight / 10).toFixed(1) }}kg</span
+                >
               </div>
             </div>
 
@@ -136,32 +203,91 @@
 
         <!-- Right Side -->
         <div class="comparison-side">
-          <div class="view-selector">
-            <button
-              @click="rightView = 'all'"
-              :class="['view-button', { active: rightView === 'all' }]"
-            >
-              All Pokémon
-            </button>
-            <button
-              @click="rightView = 'favorites'"
-              :class="['view-button', { active: rightView === 'favorites' }]"
-            >
-              Favorite Pokémon
-            </button>
-          </div>
-          <AllPokFilter
-            v-if="rightView === 'all'"
-            :isComparisonMode="true"
-            :selectedPokemon="rightPokemon"
-            @select-pokemon="handleRightSelect"
-          />
-          <FavPokFilter
-            v-else
-            :isComparisonMode="true"
-            :selectedPokemon="rightPokemon"
-            @select-pokemon="handleRightSelect"
-          />
+          <template v-if="!rightPokemon">
+            <div class="view-selector">
+              <button
+                @click="rightView = 'all'"
+                :class="['view-button', { active: rightView === 'all' }]"
+              >
+                All Pokémon
+              </button>
+              <button
+                @click="rightView = 'favorites'"
+                :class="['view-button', { active: rightView === 'favorites' }]"
+              >
+                Favorite Pokémon
+              </button>
+            </div>
+            <AllPokFilter
+              v-if="rightView === 'all'"
+              :isComparisonMode="true"
+              :selectedPokemon="rightPokemon"
+              @select-pokemon="handleRightSelect"
+            />
+            <FavPokFilter
+              v-else
+              :isComparisonMode="true"
+              :selectedPokemon="rightPokemon"
+              @select-pokemon="handleRightSelect"
+            />
+          </template>
+          <template v-else>
+            <div class="selected-pokemon">
+              <button class="unselect-button" @click="rightPokemon = null">
+                <i class="bi bi-x-lg"></i>
+              </button>
+              <div class="pokemon-header">
+                <img
+                  :src="rightPokemon.sprite"
+                  :alt="rightPokemon.name"
+                  class="pokemon-sprite"
+                />
+                <h3 class="pokemon-name">{{ rightPokemon.name }}</h3>
+              </div>
+              <div class="pokemon-types">
+                <span
+                  v-for="type in rightPokemon.types"
+                  :key="type"
+                  :class="['type-badge', type.toLowerCase()]"
+                >
+                  {{ type }}
+                </span>
+              </div>
+              <div class="pokemon-details">
+                <div class="detail-item">
+                  <span class="detail-label">Height:</span>
+                  <span class="detail-value"
+                    >{{ rightPokemon.height / 10 }}m</span
+                  >
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Weight:</span>
+                  <span class="detail-value"
+                    >{{ rightPokemon.weight / 10 }}kg</span
+                  >
+                </div>
+              </div>
+              <div class="pokemon-abilities">
+                <h4>Abilities:</h4>
+                <div class="ability-list">
+                  <span
+                    v-for="ability in rightPokemon.abilities"
+                    :key="ability"
+                    class="ability-badge"
+                  >
+                    {{
+                      ability
+                        .split('-')
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(' ')
+                    }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
     </main>
@@ -296,6 +422,7 @@ onMounted(() => {
 }
 
 .comparison-side {
+  max-height: 87vh;
   background: white;
   border-radius: var(--border-radius-lg);
   padding: 1rem;
@@ -314,6 +441,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   text-align: center;
+  max-height: 87vh;
 }
 
 .comparison-instructions h2 {
@@ -425,24 +553,60 @@ onMounted(() => {
 }
 
 /* Type colors */
-.normal { background-color: #A8A878; }
-.fire { background-color: #F08030; }
-.water { background-color: #6890F0; }
-.electric { background-color: #F8D030; }
-.grass { background-color: #78C850; }
-.ice { background-color: #98D8D8; }
-.fighting { background-color: #C03028; }
-.poison { background-color: #A040A0; }
-.ground { background-color: #E0C068; }
-.flying { background-color: #A890F0; }
-.psychic { background-color: #F85888; }
-.bug { background-color: #A8B820; }
-.rock { background-color: #B8A038; }
-.ghost { background-color: #705898; }
-.dragon { background-color: #7038F8; }
-.dark { background-color: #705848; }
-.steel { background-color: #B8B8D0; }
-.fairy { background-color: #EE99AC; }
+.normal {
+  background-color: #a8a878;
+}
+.fire {
+  background-color: #f08030;
+}
+.water {
+  background-color: #6890f0;
+}
+.electric {
+  background-color: #f8d030;
+}
+.grass {
+  background-color: #78c850;
+}
+.ice {
+  background-color: #98d8d8;
+}
+.fighting {
+  background-color: #c03028;
+}
+.poison {
+  background-color: #a040a0;
+}
+.ground {
+  background-color: #e0c068;
+}
+.flying {
+  background-color: #a890f0;
+}
+.psychic {
+  background-color: #f85888;
+}
+.bug {
+  background-color: #a8b820;
+}
+.rock {
+  background-color: #b8a038;
+}
+.ghost {
+  background-color: #705898;
+}
+.dragon {
+  background-color: #7038f8;
+}
+.dark {
+  background-color: #705848;
+}
+.steel {
+  background-color: #b8b8d0;
+}
+.fairy {
+  background-color: #ee99ac;
+}
 
 @media (max-width: 1024px) {
   .comparison-container {
@@ -472,5 +636,111 @@ onMounted(() => {
     font-size: 0.75rem;
     padding: 0.375rem;
   }
+}
+
+.selected-pokemon {
+  position: relative;
+  padding: 1.5rem;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  height: 100%;
+  overflow-y: auto;
+}
+
+.unselect-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  color: var(--neutral-600);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: color var(--transition-fast);
+  z-index: 1;
+}
+
+.unselect-button:hover {
+  color: var(--error);
+}
+
+.pokemon-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.pokemon-sprite {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.pokemon-name {
+  font-size: 1.5rem;
+  color: var(--neutral-900);
+  text-transform: capitalize;
+  margin-bottom: 1rem;
+}
+
+.pokemon-types {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.pokemon-details {
+  background: var(--neutral-50);
+  padding: 1rem;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-label {
+  color: var(--neutral-600);
+  font-size: 0.875rem;
+}
+
+.detail-value {
+  color: var(--neutral-900);
+  font-weight: 500;
+}
+
+.pokemon-abilities {
+  margin-top: 1rem;
+}
+
+.pokemon-abilities h4 {
+  font-size: 1rem;
+  color: var(--neutral-700);
+  margin-bottom: 0.5rem;
+}
+
+.ability-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ability-badge {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.875rem;
 }
 </style>
