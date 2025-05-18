@@ -104,7 +104,7 @@
 <script setup>
 import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getPokemonList } from '../api/pokemon';
+import { getPokemonList, getFavoritePokemonList } from '../api/pokemon';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
 
@@ -118,6 +118,10 @@ const props = defineProps({
   selectedAbility: String,
   currentPage: Number,
   isComparisonMode: {
+    type: Boolean,
+    default: false
+  },
+  isFavoriteMode: {
     type: Boolean,
     default: false
   }
@@ -142,7 +146,11 @@ const refreshPokemonList = async () => {
       type: props.selectedType,
       ability: props.selectedAbility
     };
-    const response = await getPokemonList(params);
+
+    const response = props.isFavoriteMode
+      ? await getFavoritePokemonList(params)
+      : await getPokemonList(params);
+
     pokemons.value = response.results || [];
     emit('update:pokemons', pokemons.value);
     emit('update:currentPage', 1);
@@ -158,6 +166,23 @@ const refreshPokemonList = async () => {
 const loadMorePokemon = async () => {
   if (isLoading.value) return; // Prevent multiple simultaneous requests
   
+  // For favorite mode, we need to check if we have more Pokémon to display
+  if (props.isFavoriteMode) {
+    const allFavoritePokemon = await getFavoritePokemonList({
+      search: props.searchQuery,
+      type: props.selectedType,
+      ability: props.selectedAbility
+    });
+    
+    const currentCount = pokemons.value.length;
+    const totalCount = allFavoritePokemon.results.length;
+    
+    // If we've displayed all Pokémon, don't load more
+    if (currentCount >= totalCount) {
+      return;
+    }
+  }
+  
   // Store current scroll position
   if (listContainer.value) {
     lastScrollPosition.value = listContainer.value.scrollTop;
@@ -171,10 +196,36 @@ const loadMorePokemon = async () => {
       type: props.selectedType,
       ability: props.selectedAbility
     };
-    const response = await getPokemonList(params);
-    // Append new results to existing array
-    pokemons.value = [...pokemons.value, ...(response.results || [])];
-    emit('update:pokemons', pokemons.value);
+
+    const response = props.isFavoriteMode
+      ? await getFavoritePokemonList(params)
+      : await getPokemonList(params);
+
+    // For favorite mode, we need to handle pagination manually
+    if (props.isFavoriteMode) {
+      const allPokemon = response.results || [];
+      const itemsPerPage = 20; // Assuming 20 items per page
+      const startIndex = (props.currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const newPokemon = allPokemon.slice(startIndex, endIndex);
+      
+      // Only append if we have new Pokémon to show
+      if (newPokemon.length > 0) {
+        pokemons.value = [...pokemons.value, ...newPokemon];
+        emit('update:pokemons', pokemons.value);
+      }
+    } else {
+      // Regular pagination for non-favorite mode
+      // Only append if we have new results and they're not duplicates
+      const newResults = response.results || [];
+      const existingIds = new Set(pokemons.value.map(p => p.name));
+      const uniqueNewResults = newResults.filter(p => !existingIds.has(p.name));
+      
+      if (uniqueNewResults.length > 0) {
+        pokemons.value = [...pokemons.value, ...uniqueNewResults];
+        emit('update:pokemons', pokemons.value);
+      }
+    }
     
     // Restore scroll position after the DOM updates
     nextTick(() => {
