@@ -300,6 +300,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
 import AllPokFilter from '../components/AllPokFilter.vue';
 import FavPokFilter from '../components/FavPokFilter.vue';
+import { getPokemonDetail } from '../api/pokemon';
 
 const router = useRouter();
 const route = useRoute();
@@ -310,14 +311,24 @@ const rightView = ref('all');
 const leftPokemon = ref(null);
 const rightPokemon = ref(null);
 
-const handleLeftSelect = (pokemon) => {
-  console.log('PokemonComparison: Left side selected:', pokemon.name);
-  leftPokemon.value = pokemon;
+const handleLeftSelect = async (pokemon) => {
+  try {
+    const details = await getPokemonDetail(pokemon.name);
+    console.log('PokemonComparison: Left side selected:', details.name);
+    leftPokemon.value = details;
+  } catch (error) {
+    console.error('Error fetching Pokémon details:', error);
+  }
 };
 
-const handleRightSelect = (pokemon) => {
-  console.log('PokemonComparison: Right side selected:', pokemon.name);
-  rightPokemon.value = pokemon;
+const handleRightSelect = async (pokemon) => {
+  try {
+    const details = await getPokemonDetail(pokemon.name);
+    console.log('PokemonComparison: Right side selected:', details.name);
+    rightPokemon.value = details;
+  } catch (error) {
+    console.error('Error fetching Pokémon details:', error);
+  }
 };
 
 const handleLogout = async () => {
@@ -332,13 +343,23 @@ const formatName = (name) => {
     .join(' ');
 };
 
-onMounted(() => {
+onMounted(async () => {
   // Initialize with route params if they exist
   if (route.query.left) {
-    leftPokemon.value = route.query.left;
+    try {
+      const details = await getPokemonDetail(route.query.left);
+      leftPokemon.value = details;
+    } catch (error) {
+      console.error('Error fetching left Pokémon details:', error);
+    }
   }
   if (route.query.right) {
-    rightPokemon.value = route.query.right;
+    try {
+      const details = await getPokemonDetail(route.query.right);
+      rightPokemon.value = details;
+    } catch (error) {
+      console.error('Error fetching right Pokémon details:', error);
+    }
   }
 });
 </script>
