@@ -373,26 +373,26 @@ onMounted(async () => {
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-top: 2rem;
-  width: 100%;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .pokemon-card {
-  background: white;
-  border-radius: var(--border-radius-lg);
+  background: var(--neutral-50);
+  border-radius: 1rem;
   padding: 1.5rem;
-  text-align: center;
-  box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 280px;
+  max-height: 610px;
   position: relative;
-  cursor: pointer;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
+  gap: 1rem;
+  overflow: hidden;
 }
 
 .pokemon-card:hover {
@@ -406,20 +406,23 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   padding: 1rem;
+  flex-shrink: 0;
 }
 
 .pokemon-sprite {
-  width: 220px;
-  height: 220px;
+  width: 180px;
+  height: 180px;
   object-fit: contain;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
-.pokemon-card h3 {
-  margin: 0 0 0.5rem;
+.pokemon-name {
+  margin: 0;
   color: var(--neutral-900);
   text-transform: capitalize;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
+  text-align: center;
+  flex-shrink: 0;
 }
 
 .pokemon-types {
@@ -428,7 +431,8 @@ onMounted(async () => {
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  flex-shrink: 0;
 }
 
 .type-badge {
@@ -442,11 +446,12 @@ onMounted(async () => {
 
 .pokemon-details {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   justify-content: space-around;
   padding: 0.5rem;
   background: var(--neutral-50);
   border-radius: var(--border-radius-md);
+  flex-shrink: 0;
 }
 
 .detail-item {
@@ -468,7 +473,10 @@ onMounted(async () => {
 
 .pokemon-abilities {
   text-align: left;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .pokemon-abilities h4 {
@@ -481,6 +489,7 @@ onMounted(async () => {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  padding-right: 0.5rem;
 }
 
 .ability-badge {
@@ -499,6 +508,7 @@ onMounted(async () => {
   justify-content: center;
   margin-top: auto;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .pokemon-actions .btn {
@@ -608,50 +618,36 @@ onMounted(async () => {
 /* Responsive adjustments */
 @media (max-width: 1200px) {
   .pokemon-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem;
   }
 
   .pokemon-card {
-    padding: 1rem;
-    min-height: 180px;
+    max-height: 550px;
   }
 
   .pokemon-sprite {
-    width: 100px;
-    height: 100px;
-  }
-
-  .pokemon-card h3 {
-    font-size: 1rem;
+    width: 160px;
+    height: 160px;
   }
 }
 
 @media (max-width: 768px) {
   .pokemon-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
   }
 
   .pokemon-card {
-    padding: 0.75rem;
-    min-height: 160px;
+    min-width: 100%;
+    max-height: 500px;
   }
 
   .pokemon-sprite {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 0.5rem;
-  }
-
-  .pokemon-card h3 {
-    font-size: 0.875rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .type-badge {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
+    width: 140px;
+    height: 140px;
   }
 }
 
