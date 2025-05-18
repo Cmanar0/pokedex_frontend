@@ -22,8 +22,19 @@
           :key="pokemon.name"
           class="pokemon-card"
         >
-          <img :src="pokemon.sprite" :alt="pokemon.name" class="pokemon-sprite" />
-          <h3>{{ pokemon.name }}</h3>
+          <div class="pokemon-header">
+            <img :src="pokemon.sprite" :alt="pokemon.name" class="pokemon-sprite" />
+            <button
+              class="favorite-button"
+              :class="{ 'is-favorite': isFavorite(pokemon.name) }"
+              @click.stop="toggleFavorite(pokemon)"
+            >
+              <i class="bi bi-heart-fill"></i>
+            </button>
+          </div>
+          
+          <h3 class="pokemon-name">{{ pokemon.name }}</h3>
+          
           <div class="pokemon-types">
             <span
               v-for="type in pokemon.types"
@@ -32,6 +43,39 @@
             >
               {{ type }}
             </span>
+          </div>
+
+          <div class="pokemon-details">
+            <div class="detail-item">
+              <span class="detail-label">Height:</span>
+              <span class="detail-value">{{ pokemon.height / 10 }}m</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Weight:</span>
+              <span class="detail-value">{{ pokemon.weight / 10 }}kg</span>
+            </div>
+          </div>
+
+          <div class="pokemon-abilities">
+            <h4>Abilities:</h4>
+            <div class="ability-list">
+              <span
+                v-for="ability in pokemon.abilities"
+                :key="ability"
+                class="ability-badge"
+              >
+                {{ ability.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
+              </span>
+            </div>
+          </div>
+
+          <div class="pokemon-actions">
+            <button class="btn btn-primary btn-sm" @click.stop="viewDetails(pokemon)">
+              <i class="bi bi-info-circle"></i> See Details
+            </button>
+            <button class="btn btn-secondary btn-sm" @click.stop="comparePokemon(pokemon)">
+              <i class="bi bi-arrow-left-right"></i> Compare
+            </button>
           </div>
         </div>
         <!-- Loading spinner for infinite scroll -->
@@ -57,7 +101,7 @@ const props = defineProps({
   currentPage: Number,
 });
 
-const emit = defineEmits(['update:currentPage', 'update:pokemons']);
+const emit = defineEmits(['update:currentPage', 'update:pokemons', 'view-details', 'compare', 'toggle-favorite']);
 
 const listContainer = ref(null);
 const isLoading = ref(false);
@@ -135,6 +179,23 @@ const handleScroll = (event) => {
   }
 };
 
+const isFavorite = (pokemonName) => {
+  const favorites = JSON.parse(localStorage.getItem('favoritePokemon') || '[]');
+  return favorites.includes(pokemonName);
+};
+
+const toggleFavorite = (pokemon) => {
+  emit('toggle-favorite', pokemon);
+};
+
+const viewDetails = (pokemon) => {
+  emit('view-details', pokemon);
+};
+
+const comparePokemon = (pokemon) => {
+  emit('compare', pokemon);
+};
+
 // Watch for filter changes
 watch(
   [() => props.searchQuery, () => props.selectedType, () => props.selectedAbility],
@@ -159,7 +220,7 @@ onMounted(() => {
 
 <style scoped>
 .pokemon-list-container {
-  height: 600px; /* Fixed height */
+  height: 600px;
   overflow-y: auto;
   padding: 1rem;
   background: var(--neutral-50);
@@ -168,7 +229,7 @@ onMounted(() => {
 
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Three cards per row */
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   padding: 0.5rem;
 }
@@ -180,6 +241,9 @@ onMounted(() => {
   text-align: center;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .pokemon-card:hover {
@@ -187,17 +251,25 @@ onMounted(() => {
   box-shadow: var(--shadow-md);
 }
 
+.pokemon-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
+
 .pokemon-sprite {
   width: 120px;
   height: 120px;
   object-fit: contain;
-  margin-bottom: 1rem;
 }
 
-.pokemon-card h3 {
-  margin: 0 0 0.5rem;
+.pokemon-name {
+  margin: 0;
   color: var(--neutral-900);
   text-transform: capitalize;
+  font-size: 1.25rem;
 }
 
 .pokemon-types {
@@ -214,6 +286,98 @@ onMounted(() => {
   font-weight: 500;
   color: white;
   text-transform: capitalize;
+}
+
+.pokemon-details {
+  display: flex;
+  justify-content: space-around;
+  padding: 0.5rem;
+  background: var(--neutral-50);
+  border-radius: var(--border-radius-md);
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: var(--neutral-600);
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-weight: 500;
+  color: var(--neutral-900);
+}
+
+.pokemon-abilities {
+  text-align: left;
+}
+
+.pokemon-abilities h4 {
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+  margin-bottom: 0.5rem;
+}
+
+.ability-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.ability-badge {
+  background: var(--neutral-100);
+  color: var(--neutral-700);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--border-radius-full);
+  font-size: 0.75rem;
+  text-transform: capitalize;
+}
+
+.pokemon-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.favorite-button {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: white;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: var(--neutral-400);
+  transition: all var(--transition-fast);
+  border-radius: 50%;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  z-index: 1;
+}
+
+.favorite-button:hover {
+  color: var(--error);
+  transform: scale(1.1);
+}
+
+.favorite-button.is-favorite {
+  color: var(--error);
+  background: var(--error-light);
+}
+
+.favorite-button i {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
 .loading-state,
