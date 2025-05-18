@@ -377,7 +377,7 @@ onMounted(async () => {
   gap: 2rem;
   padding: 2rem;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 0;
 }
 
 .pokemon-card {
@@ -387,12 +387,15 @@ onMounted(async () => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   min-width: 280px;
+  max-width: 400px;
   max-height: 610px;
   position: relative;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  overflow: hidden;
+  margin: 0;
+  width: 100%;
+  justify-self: start;
 }
 
 .pokemon-card:hover {
@@ -624,7 +627,7 @@ onMounted(async () => {
   }
 
   .pokemon-card {
-    max-height: 550px;
+    max-width: 350px;
   }
 
   .pokemon-sprite {
@@ -642,7 +645,7 @@ onMounted(async () => {
 
   .pokemon-card {
     min-width: 100%;
-    max-height: 500px;
+    max-width: 400px;
   }
 
   .pokemon-sprite {
