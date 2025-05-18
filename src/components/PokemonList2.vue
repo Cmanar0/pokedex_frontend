@@ -1,11 +1,14 @@
 <template>
-  <div 
+  <div
     class="pokemon-list-container"
     @scroll="handleScroll"
     ref="listContainer"
   >
     <div class="pokemon-grid">
-      <div v-if="isLoading && (!pokemons || pokemons.length === 0)" class="loading-state">
+      <div
+        v-if="isLoading && (!pokemons || pokemons.length === 0)"
+        class="loading-state"
+      >
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -21,21 +24,27 @@
           v-for="(pokemon, index) in pokemons"
           :key="pokemon.name"
           class="pokemon-card"
-          :class="{ 'last-card': isFavoriteMode && index === pokemons.length - 1 }"
+          :class="{
+            'last-card': index === pokemons.length - 1,
+          }"
         >
           <div class="pokemon-header">
-            <img :src="pokemon.sprite" :alt="pokemon.name" class="pokemon-sprite" />
+            <img
+              :src="pokemon.sprite"
+              :alt="pokemon.name"
+              class="pokemon-sprite"
+            />
             <button
               class="favorite-button"
-              :class="{ 'active': isFavorite(pokemon.name) }"
+              :class="{ active: isFavorite(pokemon.name) }"
               @click.stop="toggleFavorite(pokemon)"
             >
               <i class="bi bi-heart-fill"></i>
             </button>
           </div>
-          
-          <h3 class="pokemon-name">{{ pokemon.name }}</h3>
-          
+
+          <h2 class="pokemon-name">{{ pokemon.name }}</h2>
+
           <div class="pokemon-types">
             <span
               v-for="type in pokemon.types"
@@ -65,25 +74,33 @@
                 :key="ability"
                 class="ability-badge"
               >
-                {{ ability.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') }}
+                {{
+                  ability
+                    .split('-')
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')
+                }}
               </span>
             </div>
           </div>
 
           <div class="pokemon-actions">
-            <button class="btn btn-primary btn-sm" @click.stop="viewDetails(pokemon)">
+            <button
+              class="btn btn-primary btn-sm"
+              @click.stop="viewDetails(pokemon)"
+            >
               <i class="bi bi-info-circle"></i> See Details
             </button>
-            <button 
+            <button
               v-if="!isComparisonMode"
-              class="btn btn-secondary btn-sm" 
+              class="btn btn-secondary btn-sm"
               @click.stop="comparePokemon(pokemon)"
             >
               <i class="bi bi-arrow-left-right"></i> Compare
             </button>
-            <button 
+            <button
               v-else
-              class="btn btn-secondary btn-sm" 
+              class="btn btn-secondary btn-sm"
               @click.stop="handleSelect(pokemon)"
             >
               <i class="bi bi-check-circle"></i> Select
@@ -120,15 +137,22 @@ const props = defineProps({
   currentPage: Number,
   isComparisonMode: {
     type: Boolean,
-    default: false
+    default: false,
   },
   isFavoriteMode: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emit = defineEmits(['update:currentPage', 'update:pokemons', 'view-details', 'compare', 'toggle-favorite', 'select-pokemon']);
+const emit = defineEmits([
+  'update:currentPage',
+  'update:pokemons',
+  'view-details',
+  'compare',
+  'toggle-favorite',
+  'select-pokemon',
+]);
 
 const listContainer = ref(null);
 const isLoading = ref(false);
@@ -145,7 +169,7 @@ const refreshPokemonList = async () => {
       page: 1, // Always start from page 1 when refreshing
       search: props.searchQuery,
       type: props.selectedType,
-      ability: props.selectedAbility
+      ability: props.selectedAbility,
     };
 
     const response = props.isFavoriteMode
@@ -166,36 +190,36 @@ const refreshPokemonList = async () => {
 
 const loadMorePokemon = async () => {
   if (isLoading.value) return; // Prevent multiple simultaneous requests
-  
+
   // For favorite mode, we need to check if we have more Pokémon to display
   if (props.isFavoriteMode) {
     const allFavoritePokemon = await getFavoritePokemonList({
       search: props.searchQuery,
       type: props.selectedType,
-      ability: props.selectedAbility
+      ability: props.selectedAbility,
     });
-    
+
     const currentCount = pokemons.value.length;
     const totalCount = allFavoritePokemon.results.length;
-    
+
     // If we've displayed all Pokémon, don't load more
     if (currentCount >= totalCount) {
       return;
     }
   }
-  
+
   // Store current scroll position
   if (listContainer.value) {
     lastScrollPosition.value = listContainer.value.scrollTop;
   }
-  
+
   isLoading.value = true;
   try {
     const params = {
       page: props.currentPage,
       search: props.searchQuery,
       type: props.selectedType,
-      ability: props.selectedAbility
+      ability: props.selectedAbility,
     };
 
     const response = props.isFavoriteMode
@@ -209,7 +233,7 @@ const loadMorePokemon = async () => {
       const startIndex = (props.currentPage - 1) * itemsPerPage;
       const endIndex = startIndex + itemsPerPage;
       const newPokemon = allPokemon.slice(startIndex, endIndex);
-      
+
       // Only append if we have new Pokémon to show
       if (newPokemon.length > 0) {
         pokemons.value = [...pokemons.value, ...newPokemon];
@@ -219,15 +243,17 @@ const loadMorePokemon = async () => {
       // Regular pagination for non-favorite mode
       // Only append if we have new results and they're not duplicates
       const newResults = response.results || [];
-      const existingIds = new Set(pokemons.value.map(p => p.name));
-      const uniqueNewResults = newResults.filter(p => !existingIds.has(p.name));
-      
+      const existingIds = new Set(pokemons.value.map((p) => p.name));
+      const uniqueNewResults = newResults.filter(
+        (p) => !existingIds.has(p.name)
+      );
+
       if (uniqueNewResults.length > 0) {
         pokemons.value = [...pokemons.value, ...uniqueNewResults];
         emit('update:pokemons', pokemons.value);
       }
     }
-    
+
     // Restore scroll position after the DOM updates
     nextTick(() => {
       if (listContainer.value) {
@@ -246,7 +272,7 @@ const handleScroll = (event) => {
   const container = event.target;
   const scrollPosition = container.scrollTop + container.clientHeight;
   const scrollHeight = container.scrollHeight;
-  
+
   // If we're near the bottom (within 100px)
   if (scrollHeight - scrollPosition < 100) {
     console.log('Near bottom of list');
@@ -264,7 +290,7 @@ const toggleFavorite = async (pokemon) => {
     router.push('/login');
     return;
   }
-  
+
   try {
     await profileStore.toggleFavorite(pokemon.name);
   } catch (err) {
@@ -279,7 +305,7 @@ const viewDetails = (pokemon) => {
 const comparePokemon = (pokemon) => {
   router.push({
     path: '/compare',
-    query: { left: pokemon.name }
+    query: { left: pokemon.name },
   });
 };
 
@@ -290,7 +316,11 @@ const handleSelect = (pokemon) => {
 
 // Watch for filter changes
 watch(
-  [() => props.searchQuery, () => props.selectedType, () => props.selectedAbility],
+  [
+    () => props.searchQuery,
+    () => props.selectedType,
+    () => props.selectedAbility,
+  ],
   () => {
     refreshPokemonList();
   }
@@ -379,8 +409,8 @@ onMounted(async () => {
 }
 
 .pokemon-sprite {
-  width: 120px;
-  height: 120px;
+  width: 220px;
+  height: 220px;
   object-fit: contain;
   margin-bottom: 1rem;
 }
@@ -398,6 +428,7 @@ onMounted(async () => {
   justify-content: center;
   flex-wrap: wrap;
   width: 100%;
+  margin-bottom: 1rem;
 }
 
 .type-badge {
@@ -411,6 +442,7 @@ onMounted(async () => {
 
 .pokemon-details {
   display: flex;
+  margin-bottom: 1rem;
   justify-content: space-around;
   padding: 0.5rem;
   background: var(--neutral-50);
@@ -518,24 +550,60 @@ onMounted(async () => {
 }
 
 /* Type colors */
-.normal { background-color: #A8A878; }
-.fire { background-color: #F08030; }
-.water { background-color: #6890F0; }
-.electric { background-color: #F8D030; }
-.grass { background-color: #78C850; }
-.ice { background-color: #98D8D8; }
-.fighting { background-color: #C03028; }
-.poison { background-color: #A040A0; }
-.ground { background-color: #E0C068; }
-.flying { background-color: #A890F0; }
-.psychic { background-color: #F85888; }
-.bug { background-color: #A8B820; }
-.rock { background-color: #B8A038; }
-.ghost { background-color: #705898; }
-.dragon { background-color: #7038F8; }
-.dark { background-color: #705848; }
-.steel { background-color: #B8B8D0; }
-.fairy { background-color: #EE99AC; }
+.normal {
+  background-color: #a8a878;
+}
+.fire {
+  background-color: #f08030;
+}
+.water {
+  background-color: #6890f0;
+}
+.electric {
+  background-color: #f8d030;
+}
+.grass {
+  background-color: #78c850;
+}
+.ice {
+  background-color: #98d8d8;
+}
+.fighting {
+  background-color: #c03028;
+}
+.poison {
+  background-color: #a040a0;
+}
+.ground {
+  background-color: #e0c068;
+}
+.flying {
+  background-color: #a890f0;
+}
+.psychic {
+  background-color: #f85888;
+}
+.bug {
+  background-color: #a8b820;
+}
+.rock {
+  background-color: #b8a038;
+}
+.ghost {
+  background-color: #705898;
+}
+.dragon {
+  background-color: #7038f8;
+}
+.dark {
+  background-color: #705848;
+}
+.steel {
+  background-color: #b8b8d0;
+}
+.fairy {
+  background-color: #ee99ac;
+}
 
 /* Responsive adjustments */
 @media (max-width: 1200px) {
