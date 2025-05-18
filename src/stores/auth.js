@@ -48,7 +48,7 @@ export const useAuthStore = defineStore('auth', {
       this.isLoading = true;
       this.authError = null;
       try {
-        const response = await apiLogin(username, password);
+        const response = await apiLogin({ username, password });
         this.user = response.user;
         this.isAuthenticated = true;
         return true;

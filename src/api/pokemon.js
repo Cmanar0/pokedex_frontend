@@ -25,17 +25,3 @@ export const getFavoritePokemonList = (params = {}) => {
     },
   });
 };
-
-export const getPokemonTypes = async () => {
-  try {
-    const response = await fetch(`${API_URL}/pokemon/types`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch Pokemon types');
-    }
-    const data = await response.json();
-    return data.types;
-  } catch (error) {
-    console.error('Error fetching Pokemon types:', error);
-    throw error;
-  }
-};

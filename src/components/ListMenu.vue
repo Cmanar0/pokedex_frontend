@@ -2,11 +2,6 @@
   <div class="container">
     <!-- Filter Navigation -->
     <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
-      <!-- <button class="btn btn-outline-primary" @click="current = 'pokemon'">
-        Pokémon
-      </button> -->
-
-      <!-- Filters -->
       <input
         type="text"
         v-model="searchInput"
@@ -16,7 +11,11 @@
         style="min-width: 200px"
       />
 
-      <select class="form-select w-auto" v-model="selectedType">
+      <select
+        class="form-select w-auto"
+        v-model="selectedType"
+        @change="handleFilterChange"
+      >
         <option value="">All Types</option>
         <option v-for="t in types" :key="t.name" :value="t.name">
           {{ t.name }}
@@ -29,7 +28,7 @@
           class="form-control"
           v-model="abilitySearch"
           @focus="showAbilityDropdown = true"
-          @blur="setTimeout(() => (showAbilityDropdown = false), 200)"
+          @blur="handleAbilityBlur"
           placeholder="Search ability..."
           style="min-width: 200px"
         />
@@ -64,43 +63,37 @@
       </div>
     </div>
 
-    <!-- Content Slot -->
-    <div v-if="current === 'pokemon'">
-      <PokemonList
-        :style="{ maxHeight: isComparisonMode ? '56vh' : 'none' }"
-        ref="pokemonListRef"
-        :search="search"
-        :type="selectedType"
-        :ability="selectedAbility"
-        :show-favorites-only="showFavoritesOnly"
-        :is-comparison-mode="isComparisonMode"
-        :selected-position="selectedPosition"
-        @select-pokemon="handlePokemonSelect"
-      />
-    </div>
+    <!-- Pokémon List -->
+    <PokemonList
+      ref="pokemonListRef"
+      :pokemons="pokemons"
+      :isLoading="isLoading"
+      :is-comparison-mode="isComparisonMode"
+      :selected-position="selectedPosition"
+      :is-authenticated="isAuthenticated"
+      @select-pokemon="handlePokemonSelect"
+      @load-more="handleLoadMore"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import debounce from 'lodash.debounce';
 import PokemonList from './PokemonList.vue';
 import { useAuthStore } from '../stores/auth';
-import { getPokemonList, getPokemonTypes } from '../api/pokemon';
+import {
+  getPokemonList,
+  getFavoritePokemonList,
+} from '../api/pokemon';
 
 const props = defineProps({
-  isComparisonMode: {
-    type: Boolean,
-    default: false,
-  },
-  selectedPosition: {
-    type: String,
-    default: null,
-    validator: (value) => ['left', 'right', null].includes(value),
-  },
+  isComparisonMode: Boolean,
+  selectedPosition: String,
 });
 
-const current = ref('pokemon');
+const emit = defineEmits(['select-pokemon']);
+
 const searchInput = ref('');
 const search = ref('');
 const selectedType = ref('');
@@ -108,10 +101,35 @@ const selectedAbility = ref('');
 const abilitySearch = ref('');
 const showAbilityDropdown = ref(false);
 const showFavoritesOnly = ref(false);
-const authStore = useAuthStore();
-const types = ref([]);
-const pokemons = ref([]);
 const isLoading = ref(false);
+const hasMore = ref(true);
+const page = ref(1);
+const pokemons = ref([]);
+
+const authStore = useAuthStore();
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const pokemonListRef = ref(null);
+
+const types = ref([
+  { name: 'Normal' },
+  { name: 'Fire' },
+  { name: 'Water' },
+  { name: 'Electric' },
+  { name: 'Grass' },
+  { name: 'Ice' },
+  { name: 'Fighting' },
+  { name: 'Poison' },
+  { name: 'Ground' },
+  { name: 'Flying' },
+  { name: 'Psychic' },
+  { name: 'Bug' },
+  { name: 'Rock' },
+  { name: 'Ghost' },
+  { name: 'Dragon' },
+  { name: 'Dark' },
+  { name: 'Steel' },
+  { name: 'Fairy' },
+]);
 
 const abilities = ref([
   { name: 'stench' },
@@ -410,101 +428,92 @@ const abilities = ref([
   { name: 'supersweet-syrup' },
 ]);
 
-// Watch for changes in abilitySearch
-watch(abilitySearch, (newValue) => {
-  if (!newValue) {
-    selectedAbility.value = '';
+const loadMorePokemons = async (append = false) => {
+  if (!hasMore.value || isLoading.value) return;
+  isLoading.value = true;
+
+  try {
+    const params = {
+      page: page.value,
+      search: search.value,
+      type: selectedType.value,
+      ability: selectedAbility.value,
+    };
+    const data = showFavoritesOnly.value
+      ? await getFavoritePokemonList(params)
+      : await getPokemonList(params);
+
+    if (append) {
+      pokemons.value.push(...data.results);
+    } else {
+      pokemons.value = data.results;
+    }
+    hasMore.value = !!data.next;
+  } catch (err) {
+    console.error('Failed to fetch Pokémon', err);
+  } finally {
+    isLoading.value = false;
   }
-});
+};
 
-const filteredAbilities = computed(() => {
-  if (!abilitySearch.value) return abilities.value;
-  return abilities.value.filter((ability) =>
-    ability.name.toLowerCase().includes(abilitySearch.value.toLowerCase())
-  );
-});
+const handleLoadMore = () => {
+  console.log('handleLoadMore');
+  if (!isLoading.value && hasMore.value) {
+    page.value += 1;
+    loadMorePokemons(true);
+  }
+};
 
-const formatAbilityName = (name) => {
-  if (!name) return 'All Abilities';
-  return name
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+const debouncedSearch = debounce(() => {
+  search.value = searchInput.value;
+  page.value = 1;
+  loadMorePokemons(false);
+}, 400);
+
+const handleFilterChange = () => {
+  page.value = 1;
+  loadMorePokemons(false);
+};
+
+const handleFavoritesChange = () => {
+  page.value = 1;
+  loadMorePokemons(false);
+};
+
+const handleAbilityBlur = () => {
+  setTimeout(() => {
+    showAbilityDropdown.value = false;
+  }, 200);
 };
 
 const selectAbility = (ability) => {
   selectedAbility.value = ability.name;
   abilitySearch.value = formatAbilityName(ability.name);
   showAbilityDropdown.value = false;
+  handleFilterChange();
 };
 
-const debouncedSearch = debounce(() => {
-  search.value = searchInput.value;
-}, 400);
-
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-
-const emit = defineEmits([
-  'search',
-  'type-change',
-  'ability-change',
-  'favorites-change',
-  'select-pokemon',
-]);
-
-const pokemonListRef = ref(null);
-
-const handleFavoritesChange = () => {
-  // Call the child's refresh method directly
-  pokemonListRef.value?.refresh();
+const formatAbilityName = (name) => {
+  if (!name) return 'All Abilities';
+  return name
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
 };
+
+const filteredAbilities = computed(() => {
+  if (!abilitySearch.value) return abilities.value;
+  return abilities.value.filter((a) =>
+    a.name.includes(abilitySearch.value.toLowerCase())
+  );
+});
 
 const handlePokemonSelect = (pokemonName) => {
   emit('select-pokemon', pokemonName);
 };
 
-watch([search, selectedType, selectedAbility, showFavoritesOnly], () => {
-  // Reset the list when filters change
-  if (pokemonListRef.value) {
-    pokemonListRef.value.refresh();
-  }
-});
-
-const handleSearch = () => {
-  // Reset pagination when searching
-  if (props.isComparisonMode) {
-    pokemons.value = [];
-  }
-};
-
-const handleFilter = () => {
-  // Reset pagination when filtering
-  if (props.isComparisonMode) {
-    pokemons.value = [];
-  }
-};
-
-// Load types on mount
-const loadTypes = async () => {
-  try {
-    types.value = await getPokemonTypes();
-  } catch (error) {
-    console.error('Failed to fetch Pokemon types:', error);
-  }
-};
-
 onMounted(() => {
-  loadTypes();
-});
-
-// Watch for comparison mode changes
-watch(() => props.isComparisonMode, (newValue) => {
-  if (newValue) {
-    // Reset filters and list when entering comparison mode
-    searchInput.value = '';
-    selectedType.value = '';
-    pokemons.value = [];
-  }
+  loadMorePokemons(false);
 });
 </script>
 
@@ -513,7 +522,6 @@ watch(() => props.isComparisonMode, (newValue) => {
   position: relative;
   min-width: 200px;
 }
-
 .ability-dropdown {
   position: absolute;
   top: 100%;
@@ -527,12 +535,10 @@ watch(() => props.isComparisonMode, (newValue) => {
   z-index: 1000;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .ability-option {
   padding: 8px 12px;
   cursor: pointer;
 }
-
 .ability-option:hover {
   background-color: #f5f5f5;
 }

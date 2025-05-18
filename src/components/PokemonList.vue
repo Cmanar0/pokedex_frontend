@@ -1,13 +1,13 @@
 <template>
-  <div class="pokemon-list" ref="listContainer" @scroll="handleScroll">
+  <div class="pokemon-list" ref="listContainer" @scroll.passive="handleScroll">
     <!-- Loading Spinner -->
-    <div v-if="isLoading" class="loading-container">
+    <div v-if="isLoading && !pokemons.length" class="loading-container">
       <div class="loading-spinner"></div>
     </div>
 
     <!-- Pokémon Grid -->
     <div v-else class="pokemon-grid">
-      <div v-for="pokemon in results" :key="pokemon.name" class="pokemon-card">
+      <div v-for="pokemon in pokemons" :key="pokemon.name" class="pokemon-card">
         <!-- Image -->
         <div class="pokemon-image">
           <img
@@ -21,7 +21,10 @@
         <!-- Body -->
         <div class="pokemon-content">
           <div class="pokemon-header">
-            <router-link :to="`/pokemon/${pokemon.name}`" class="pokemon-name-link">
+            <router-link
+              :to="`/pokemon/${pokemon.name}`"
+              class="pokemon-name-link"
+            >
               <h3>{{ formatName(pokemon.name) }}</h3>
             </router-link>
 
@@ -58,11 +61,15 @@
             <div class="pokemon-stats">
               <div class="stat">
                 <span class="stat-label">Height:</span>
-                <span class="stat-value">{{ (pokemon.height / 10).toFixed(1) }}m</span>
+                <span class="stat-value"
+                  >{{ (pokemon.height / 10).toFixed(1) }}m</span
+                >
               </div>
               <div class="stat">
                 <span class="stat-label">Weight:</span>
-                <span class="stat-value">{{ (pokemon.weight / 10).toFixed(1) }}kg</span>
+                <span class="stat-value"
+                  >{{ (pokemon.weight / 10).toFixed(1) }}kg</span
+                >
               </div>
             </div>
           </div>
@@ -81,7 +88,7 @@
               <router-link
                 :to="`/pokemon/${pokemon.name}`"
                 class="btn btn-secondary"
-                style="background-color: var(--secondary-color); color: white;"
+                style="background-color: var(--secondary-color); color: white"
               >
                 See Details
               </router-link>
@@ -97,243 +104,86 @@
               class="btn"
               :class="{
                 'btn-primary': !isFavorite(pokemon.name),
-                'btn-secondary': isFavorite(pokemon.name)
+                'btn-secondary': isFavorite(pokemon.name),
               }"
               @click="handleFavorite(pokemon.name)"
               :disabled="profileStore.isUpdatingFavorite"
             >
-              {{ isFavorite(pokemon.name) ? 'Remove from Favorites' : 'Add to Favorites' }}
+              {{
+                isFavorite(pokemon.name)
+                  ? 'Remove from Favorites'
+                  : 'Add to Favorites'
+              }}
             </button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div v-if="!isComparisonMode" class="pagination">
-      <button
-        class="btn btn-primary"
-        :disabled="!previous || isLoading"
-        @click="changePage(page - 1)"
-      >
-        Previous
-      </button>
-      <button
-        class="btn btn-primary"
-        :disabled="!next || isLoading"
-        @click="changePage(page + 1)"
-      >
-        Next
-      </button>
+    <!-- Loading indicator at bottom -->
+    <div v-if="isLoading && pokemons.length" class="loading-container">
+      <div class="loading-spinner"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, computed, nextTick } from 'vue';
-import { getPokemonList, getFavoritePokemonList } from '../api/pokemon';
+import { ref, computed, onMounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useProfileStore } from '../stores/profile';
 import { useAuthStore } from '../stores/auth';
 
 const props = defineProps({
-  search: String,
-  type: String,
-  ability: String,
-  showFavoritesOnly: {
-    type: Boolean,
-    default: false
-  },
-  isComparisonMode: {
-    type: Boolean,
-    default: false
-  },
-  selectedPosition: {
-    type: String,
-    default: null,
-    validator: (value) => ['left', 'right', null].includes(value)
-  }
+  pokemons: Array,
+  isLoading: Boolean,
+  isComparisonMode: Boolean,
+  selectedPosition: String,
+  isAuthenticated: Boolean,
 });
 
-const emit = defineEmits(['select-pokemon']);
-
-const results = ref([]);
-const page = ref(1);
-const next = ref(null);
-const previous = ref(null);
-const isLoading = ref(false);
-const hasMore = ref(true);
-const listContainer = ref(null);
+const emit = defineEmits(['select-pokemon', 'load-more']);
 
 const router = useRouter();
 const profileStore = useProfileStore();
-const authStore = useAuthStore();
+const listContainer = ref(null);
+const lastScrollPosition = ref(0);
 
-const isAuthenticated = computed(() => authStore.isAuthenticated);
-const isFavorite = (pokemonName) => profileStore.isFavorite(pokemonName);
+const isFavorite = (name) => profileStore.isFavorite(name);
 
-// Add formatName function
-const formatName = (name) => {
-  return name
+const formatName = (name) =>
+  name
     .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ');
-};
 
-const fetchData = async () => {
-  isLoading.value = true;
-  
-  // Save scroll position before fetching new data
-  const scrollPosition = listContainer.value?.scrollTop || 0;
-  
-  try {
-    let data;
-    if (props.showFavoritesOnly) {
-      // Pass all filter parameters to the favorites endpoint
-      const params = {};
-      if (props.search) params.search = props.search;
-      if (props.type) params.type = props.type;
-      if (props.ability) params.ability = props.ability;
+const handleSelect = (name) => emit('select-pokemon', name);
 
-      data = await getFavoritePokemonList(params);
-      results.value = data.results;
-      next.value = null;
-      previous.value = null;
-    } else {
-      const params = { page: page.value };
-      if (props.search) params.search = props.search;
-      if (props.type) params.type = props.type;
-      if (props.ability) params.ability = props.ability;
-
-      data = await getPokemonList(params);
-      
-      if (props.isComparisonMode) {
-        // In comparison mode, append new results to existing ones
-        results.value = [...results.value, ...data.results];
-        
-        // Restore scroll position after the DOM updates
-        nextTick(() => {
-          if (listContainer.value) {
-            listContainer.value.scrollTop = scrollPosition;
-          }
-        });
-      } else {
-        // In normal mode, replace results
-        results.value = data.results;
-      }
-      
-      next.value = data.next;
-      previous.value = data.previous;
-      hasMore.value = !!data.next;
-    }
-  } catch (err) {
-    console.error('Failed to fetch Pokémon list:', err);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-const changePage = (newPage) => {
-  page.value = newPage;
-};
-
-const handleFavorite = async (pokemonName) => {
-  try {
-    await profileStore.toggleFavorite(pokemonName);
-  } catch (err) {
-    console.error('Failed to update favorite:', err);
-  }
-};
-
-const goToDetail = (name) => {
-  router.push(`/pokemon/${name}`);
-};
-
-// Type badge coloring
-const typeColor = (type) => {
-  const map = {
-    grass: 'bg-success text-white',
-    fire: 'bg-danger text-white',
-    water: 'bg-primary text-white',
-    electric: 'bg-warning text-dark',
-    psychic: 'bg-danger text-white',
-    ice: 'bg-info text-dark',
-    dark: 'bg-dark text-white',
-    fairy: 'bg-light text-dark border',
-    normal: 'bg-secondary text-white',
-    bug: 'bg-success text-white',
-    poison: 'bg-secondary text-white', // fallback to secondary
-    ground: 'bg-warning text-dark',
-    rock: 'bg-dark text-white',
-    ghost: 'bg-dark text-white',
-    steel: 'bg-secondary text-white',
-    fighting: 'bg-danger text-white',
-    dragon: 'bg-primary text-white',
-    flying: 'bg-info text-dark',
-  };
-  return map[type.toLowerCase()] || 'bg-light text-dark border';
-};
-
-const refresh = () => {
-  fetchData();
-};
-
-// Expose the refresh method to parent
-defineExpose({
-  refresh
-});
-
-onMounted(async () => {
-  if (isAuthenticated.value) {
-    await profileStore.fetchProfile();
-  }
-  await fetchData();
-});
-
-// Update the watch to include showFavoritesOnly
-watch(
-  [page, () => props.search, () => props.type, () => props.ability, () => props.showFavoritesOnly],
-  () => {
-    fetchData();
-  }
-);
-
-const handleSelect = (pokemonName) => {
-  emit('select-pokemon', pokemonName);
+const handleFavorite = async (name) => {
+  await profileStore.toggleFavorite(name);
 };
 
 const handleScroll = () => {
-  if (!props.isComparisonMode || !listContainer.value) return;
-  
-  const { scrollTop, scrollHeight, clientHeight } = listContainer.value;
-  const scrollBottom = scrollTop + clientHeight;
-  
-  // Load more when user scrolls to 80% of the list
-  if (scrollBottom >= scrollHeight * 0.8 && !isLoading.value && hasMore.value) {
-    page.value += 1;
-    fetchData();
+  const el = listContainer.value;
+  if (!el || props.isLoading) return;
+
+  // Save current scroll position
+  lastScrollPosition.value = el.scrollTop;
+
+  const scrollBottom = el.scrollTop + el.clientHeight;
+  if (scrollBottom >= el.scrollHeight - 100) {
+    emit('load-more');
   }
 };
 
-// Reset pagination when comparison mode changes
-watch(() => props.isComparisonMode, (newValue) => {
-  if (newValue) {
-    page.value = 1;
-    results.value = []; // Clear existing results
-    hasMore.value = true;
-    fetchData();
-  }
-});
-
-// Watch for filter changes to reset pagination in comparison mode
-watch([() => props.search, () => props.type, () => props.ability], () => {
-  if (props.isComparisonMode) {
-    page.value = 1;
-    results.value = []; // Clear existing results
-    hasMore.value = true;
-    fetchData();
-  }
-});
+// Watch for changes in the pokemons array
+watch(() => props.pokemons, () => {
+  // Use nextTick to ensure the DOM has updated
+  nextTick(() => {
+    if (listContainer.value) {
+      listContainer.value.scrollTop = lastScrollPosition.value;
+    }
+  });
+}, { deep: true });
 </script>
 
 <style scoped>
@@ -364,22 +214,22 @@ watch([() => props.search, () => props.type, () => props.ability], () => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 200px;
+  min-height: 100px;
+  padding: 1rem;
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid var(--neutral-200);
+  border: 4px solid var(--neutral-200);
+  border-top: 4px solid var(--primary-color);
   border-radius: 50%;
-  border-top-color: var(--primary-color);
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .pokemon-grid {
@@ -394,7 +244,8 @@ watch([() => props.search, () => props.type, () => props.ability], () => {
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .pokemon-card:hover {
@@ -410,7 +261,6 @@ watch([() => props.search, () => props.type, () => props.ability], () => {
   align-items: center;
   border-bottom: 1px solid var(--neutral-200);
   height: 160px;
-  
 }
 
 .sprite {
@@ -522,22 +372,58 @@ watch([() => props.search, () => props.type, () => props.ability], () => {
 }
 
 /* Pokemon Type Colors */
-.type-badge.normal { background-color: var(--type-normal); }
-.type-badge.fire { background-color: var(--type-fire); }
-.type-badge.water { background-color: var(--type-water); }
-.type-badge.electric { background-color: var(--type-electric); }
-.type-badge.grass { background-color: var(--type-grass); }
-.type-badge.ice { background-color: var(--type-ice); }
-.type-badge.fighting { background-color: var(--type-fighting); }
-.type-badge.poison { background-color: var(--type-poison); }
-.type-badge.ground { background-color: var(--type-ground); }
-.type-badge.flying { background-color: var(--type-flying); }
-.type-badge.psychic { background-color: var(--type-psychic); }
-.type-badge.bug { background-color: var(--type-bug); }
-.type-badge.rock { background-color: var(--type-rock); }
-.type-badge.ghost { background-color: var(--type-ghost); }
-.type-badge.dragon { background-color: var(--type-dragon); }
-.type-badge.dark { background-color: var(--type-dark); }
-.type-badge.steel { background-color: var(--type-steel); }
-.type-badge.fairy { background-color: var(--type-fairy); }
-</style> 
+.type-badge.normal {
+  background-color: var(--type-normal);
+}
+.type-badge.fire {
+  background-color: var(--type-fire);
+}
+.type-badge.water {
+  background-color: var(--type-water);
+}
+.type-badge.electric {
+  background-color: var(--type-electric);
+}
+.type-badge.grass {
+  background-color: var(--type-grass);
+}
+.type-badge.ice {
+  background-color: var(--type-ice);
+}
+.type-badge.fighting {
+  background-color: var(--type-fighting);
+}
+.type-badge.poison {
+  background-color: var(--type-poison);
+}
+.type-badge.ground {
+  background-color: var(--type-ground);
+}
+.type-badge.flying {
+  background-color: var(--type-flying);
+}
+.type-badge.psychic {
+  background-color: var(--type-psychic);
+}
+.type-badge.bug {
+  background-color: var(--type-bug);
+}
+.type-badge.rock {
+  background-color: var(--type-rock);
+}
+.type-badge.ghost {
+  background-color: var(--type-ghost);
+}
+.type-badge.dragon {
+  background-color: var(--type-dragon);
+}
+.type-badge.dark {
+  background-color: var(--type-dark);
+}
+.type-badge.steel {
+  background-color: var(--type-steel);
+}
+.type-badge.fairy {
+  background-color: var(--type-fairy);
+}
+</style>
