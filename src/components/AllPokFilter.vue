@@ -49,9 +49,11 @@
     </div>
 
     <PokemonList2
-      :pokemons="pokemon"
-      :is-loading="isLoading"
-      @scroll-end="handleScrollEnd"
+      v-model:current-page="currentPage"
+      v-model:pokemons="pokemon"
+      :search-query="searchQuery"
+      :selected-type="selectedType"
+      :selected-ability="selectedAbility"
     />
   </div>
 </template>
@@ -164,7 +166,6 @@ const fetchTypesAndAbilities = async () => {
     types.value = typesResponse;
     abilities.value = abilitiesResponse;
   } catch (err) {
-    error.value = 'Failed to load filter options. Please try again later.';
     console.error('Error loading filter options:', err);
   }
 };
@@ -176,18 +177,7 @@ const handleScrollEnd = () => {
 };
 
 onMounted(async () => {
-  isLoading.value = true;
-  try {
-    await Promise.all([
-      refreshPokemonList(),
-      fetchTypesAndAbilities()
-    ]);
-  } catch (err) {
-    error.value = 'Failed to load Pokémon. Please try again later.';
-    console.error('Error loading Pokémon:', err);
-  } finally {
-    isLoading.value = false;
-  }
+  await fetchTypesAndAbilities();
 });
 </script>
 

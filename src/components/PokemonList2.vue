@@ -1,11 +1,11 @@
- <template>
+<template>
   <div 
     class="pokemon-list-container"
     @scroll="handleScroll"
     ref="listContainer"
   >
     <div class="pokemon-grid">
-      <div v-if="isLoading" class="loading-state">
+      <div v-if="isLoading && (!pokemons || pokemons.length === 0)" class="loading-state">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
@@ -34,22 +34,93 @@
             </span>
           </div>
         </div>
+        <!-- Loading spinner for infinite scroll -->
+        <div v-if="isLoading" class="loading-more">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading more...</span>
+          </div>
+          <p class="mt-2">Loading more Pokémon...</p>
+        </div>
       </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, nextTick } from 'vue';
+import { getPokemonList } from '../api/pokemon';
 
 const props = defineProps({
-  pokemons: Array,
-  isLoading: Boolean,
+  searchQuery: String,
+  selectedType: String,
+  selectedAbility: String,
+  currentPage: Number,
 });
 
-const emit = defineEmits(['scroll-end']);
+const emit = defineEmits(['update:currentPage', 'update:pokemons']);
 
 const listContainer = ref(null);
+const isLoading = ref(false);
+const error = ref(null);
+const pokemons = ref([]);
+const lastScrollPosition = ref(0);
+
+const refreshPokemonList = async () => {
+  isLoading.value = true;
+  try {
+    const params = {
+      page: 1, // Always start from page 1 when refreshing
+      search: props.searchQuery,
+      type: props.selectedType,
+      ability: props.selectedAbility
+    };
+    const response = await getPokemonList(params);
+    pokemons.value = response.results || [];
+    emit('update:pokemons', pokemons.value);
+    emit('update:currentPage', 1);
+  } catch (err) {
+    error.value = 'Failed to refresh Pokémon list. Please try again later.';
+    console.error('Error refreshing Pokémon list:', err);
+    pokemons.value = [];
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const loadMorePokemon = async () => {
+  if (isLoading.value) return; // Prevent multiple simultaneous requests
+  
+  // Store current scroll position
+  if (listContainer.value) {
+    lastScrollPosition.value = listContainer.value.scrollTop;
+  }
+  
+  isLoading.value = true;
+  try {
+    const params = {
+      page: props.currentPage,
+      search: props.searchQuery,
+      type: props.selectedType,
+      ability: props.selectedAbility
+    };
+    const response = await getPokemonList(params);
+    // Append new results to existing array
+    pokemons.value = [...pokemons.value, ...(response.results || [])];
+    emit('update:pokemons', pokemons.value);
+    
+    // Restore scroll position after the DOM updates
+    nextTick(() => {
+      if (listContainer.value) {
+        listContainer.value.scrollTop = lastScrollPosition.value;
+      }
+    });
+  } catch (err) {
+    error.value = 'Failed to load more Pokémon. Please try again later.';
+    console.error('Error loading more Pokémon:', err);
+  } finally {
+    isLoading.value = false;
+  }
+};
 
 const handleScroll = (event) => {
   const container = event.target;
@@ -59,17 +130,28 @@ const handleScroll = (event) => {
   // If we're near the bottom (within 100px)
   if (scrollHeight - scrollPosition < 100) {
     console.log('Near bottom of list');
-    emit('scroll-end');
+    emit('update:currentPage', props.currentPage + 1);
+    loadMorePokemon();
   }
 };
 
+// Watch for filter changes
+watch(
+  [() => props.searchQuery, () => props.selectedType, () => props.selectedAbility],
+  () => {
+    refreshPokemonList();
+  }
+);
+
 onMounted(() => {
+  refreshPokemonList();
   // Initial check for scroll position
   if (listContainer.value) {
     const container = listContainer.value;
     if (container.scrollHeight <= container.clientHeight) {
       console.log('Initial load - content fits viewport');
-      emit('scroll-end');
+      emit('update:currentPage', props.currentPage + 1);
+      loadMorePokemon();
     }
   }
 });
@@ -142,6 +224,16 @@ onMounted(() => {
   background: white;
   border-radius: var(--border-radius-lg);
   box-shadow: var(--shadow-sm);
+}
+
+.loading-more {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 1rem;
+  background: white;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-top: 1rem;
 }
 
 /* Type colors */
