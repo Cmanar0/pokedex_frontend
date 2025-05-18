@@ -18,15 +18,16 @@
       </div>
       <template v-else>
         <div
-          v-for="pokemon in pokemons"
+          v-for="(pokemon, index) in pokemons"
           :key="pokemon.name"
           class="pokemon-card"
+          :class="{ 'last-card': isFavoriteMode && index === pokemons.length - 1 }"
         >
           <div class="pokemon-header">
             <img :src="pokemon.sprite" :alt="pokemon.name" class="pokemon-sprite" />
             <button
               class="favorite-button"
-              :class="{ 'is-favorite': isFavorite(pokemon.name) }"
+              :class="{ 'active': isFavorite(pokemon.name) }"
               @click.stop="toggleFavorite(pokemon)"
             >
               <i class="bi bi-heart-fill"></i>
@@ -320,11 +321,31 @@ onMounted(async () => {
   border-radius: var(--border-radius-lg);
 }
 
+/* Custom scrollbar styles */
+.pokemon-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pokemon-list-container::-webkit-scrollbar-track {
+  background: var(--neutral-100);
+  border-radius: var(--border-radius-full);
+}
+
+.pokemon-list-container::-webkit-scrollbar-thumb {
+  background: var(--neutral-300);
+  border-radius: var(--border-radius-full);
+}
+
+.pokemon-list-container::-webkit-scrollbar-thumb:hover {
+  background: var(--neutral-400);
+}
+
 .pokemon-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 1.5rem;
-  padding: 0.5rem;
+  margin-top: 2rem;
+  width: 100%;
 }
 
 .pokemon-card {
@@ -334,9 +355,13 @@ onMounted(async () => {
   text-align: center;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-fast);
+  position: relative;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
 }
 
 .pokemon-card:hover {
@@ -356,13 +381,14 @@ onMounted(async () => {
   width: 120px;
   height: 120px;
   object-fit: contain;
+  margin-bottom: 1rem;
 }
 
-.pokemon-name {
-  margin: 0;
+.pokemon-card h3 {
+  margin: 0 0 0.5rem;
   color: var(--neutral-900);
   text-transform: capitalize;
-  font-size: 1.25rem;
+  font-size: 1.125rem;
 }
 
 .pokemon-types {
@@ -370,6 +396,7 @@ onMounted(async () => {
   gap: 0.5rem;
   justify-content: center;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .type-badge {
@@ -408,6 +435,7 @@ onMounted(async () => {
 
 .pokemon-abilities {
   text-align: left;
+  margin-bottom: 1rem;
 }
 
 .pokemon-abilities h4 {
@@ -450,42 +478,22 @@ onMounted(async () => {
 
 .favorite-button {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: white;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
   border: none;
-  cursor: pointer;
-  padding: 0.5rem;
   color: var(--neutral-400);
-  transition: all var(--transition-fast);
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-sm);
-  z-index: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color var(--transition-fast);
 }
 
 .favorite-button:hover {
   color: var(--error);
-  transform: scale(1.1);
 }
 
-.favorite-button.is-favorite {
+.favorite-button.active {
   color: var(--error);
-  background: var(--error-light);
-}
-
-.favorite-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.favorite-button i {
-  font-size: 1.25rem;
-  line-height: 1;
 }
 
 .loading-state,
@@ -527,4 +535,91 @@ onMounted(async () => {
 .dark { background-color: #705848; }
 .steel { background-color: #B8B8D0; }
 .fairy { background-color: #EE99AC; }
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .pokemon-card {
+    padding: 1rem;
+    min-height: 180px;
+  }
+
+  .pokemon-sprite {
+    width: 100px;
+    height: 100px;
+  }
+
+  .pokemon-card h3 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+  }
+
+  .pokemon-card {
+    padding: 0.75rem;
+    min-height: 160px;
+  }
+
+  .pokemon-sprite {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0.5rem;
+  }
+
+  .pokemon-card h3 {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .type-badge {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pokemon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .pokemon-card {
+    padding: 0.5rem;
+    min-height: 140px;
+  }
+
+  .pokemon-sprite {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 0.25rem;
+  }
+
+  .pokemon-card h3 {
+    font-size: 0.75rem;
+  }
+
+  .type-badge {
+    padding: 0.125rem 0.375rem;
+    font-size: 0.625rem;
+  }
+
+  .favorite-button {
+    top: 0.25rem;
+    right: 0.25rem;
+    font-size: 0.875rem;
+  }
+}
+
+.last-card {
+  margin-bottom: 8rem;
+}
 </style>
