@@ -11,5 +11,4 @@ COPY . .
 
 EXPOSE 5173
 
-# ✅ This guarantees vite runs correctly even in Alpine/Linux shells
 CMD ["npx", "vite", "--host"]
