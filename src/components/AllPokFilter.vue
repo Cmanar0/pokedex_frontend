@@ -54,7 +54,8 @@
       :search-query="searchQuery"
       :selected-type="selectedType"
       :selected-ability="selectedAbility"
-      :is-comparison-mode="false"
+      :is-comparison-mode="props.isComparisonMode"
+      @select-pokemon="emit('select-pokemon', $event)"
     />
   </div>
 </template>
@@ -63,6 +64,23 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { getTypes, getAbilities, getPokemonList } from '../api/pokemon';
 import PokemonList2 from './PokemonList2.vue';
+
+defineOptions({
+  name: 'AllPokFilter'
+});
+
+const props = defineProps({
+  isComparisonMode: {
+    type: Boolean,
+    default: false
+  },
+  selectedPokemon: {
+    type: Object,
+    default: null
+  }
+});
+
+const emit = defineEmits(['select-pokemon']);
 
 const searchQuery = ref('');
 const selectedType = ref('');

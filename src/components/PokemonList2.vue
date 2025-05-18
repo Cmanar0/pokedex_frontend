@@ -128,7 +128,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:currentPage', 'update:pokemons', 'view-details', 'compare', 'toggle-favorite']);
+const emit = defineEmits(['update:currentPage', 'update:pokemons', 'view-details', 'compare', 'toggle-favorite', 'select-pokemon']);
 
 const listContainer = ref(null);
 const isLoading = ref(false);
@@ -284,7 +284,8 @@ const comparePokemon = (pokemon) => {
 };
 
 const handleSelect = (pokemon) => {
-  console.log('Selected Pokémon for comparison:', pokemon.name);
+  console.log('PokemonList2: Selected Pokémon for comparison:', pokemon.name);
+  emit('select-pokemon', pokemon);
 };
 
 // Watch for filter changes

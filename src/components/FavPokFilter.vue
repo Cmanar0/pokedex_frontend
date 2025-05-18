@@ -53,19 +53,37 @@
       :selected-type="selectedType"
       :selected-ability="selectedAbility"
       :current-page="currentPage"
-      :is-comparison-mode="false"
+      :is-comparison-mode="props.isComparisonMode"
       :is-favorite-mode="true"
       @update:current-page="currentPage = $event"
       @update:pokemons="pokemon = $event"
+      @select-pokemon="emit('select-pokemon', $event)"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { getTypes, getAbilities } from '../api/pokemon';
+import { ref, computed, onMounted, watch } from 'vue';
+import { getTypes, getAbilities, getFavoritePokemonList } from '../api/pokemon';
 import { useProfileStore } from '../stores/profile';
 import PokemonList2 from './PokemonList2.vue';
+
+defineOptions({
+  name: 'FavPokFilter'
+});
+
+const props = defineProps({
+  isComparisonMode: {
+    type: Boolean,
+    default: false
+  },
+  selectedPokemon: {
+    type: Object,
+    default: null
+  }
+});
+
+const emit = defineEmits(['select-pokemon']);
 
 const searchQuery = ref('');
 const selectedType = ref('');

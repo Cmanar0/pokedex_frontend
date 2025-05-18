@@ -34,8 +34,14 @@
               Favorite Pokémon
             </button>
           </div>
-          <component 
-            :is="leftView === 'all' ? AllPokFilter : FavPokFilter"
+          <AllPokFilter
+            v-if="leftView === 'all'"
+            :isComparisonMode="true"
+            :selectedPokemon="leftPokemon"
+            @select-pokemon="handleLeftSelect"
+          />
+          <FavPokFilter
+            v-else
             :isComparisonMode="true"
             :selectedPokemon="leftPokemon"
             @select-pokemon="handleLeftSelect"
@@ -144,8 +150,14 @@
               Favorite Pokémon
             </button>
           </div>
-          <component 
-            :is="rightView === 'all' ? AllPokFilter : FavPokFilter"
+          <AllPokFilter
+            v-if="rightView === 'all'"
+            :isComparisonMode="true"
+            :selectedPokemon="rightPokemon"
+            @select-pokemon="handleRightSelect"
+          />
+          <FavPokFilter
+            v-else
             :isComparisonMode="true"
             :selectedPokemon="rightPokemon"
             @select-pokemon="handleRightSelect"
@@ -173,10 +185,12 @@ const leftPokemon = ref(null);
 const rightPokemon = ref(null);
 
 const handleLeftSelect = (pokemon) => {
+  console.log('PokemonComparison: Left side selected:', pokemon.name);
   leftPokemon.value = pokemon;
 };
 
 const handleRightSelect = (pokemon) => {
+  console.log('PokemonComparison: Right side selected:', pokemon.name);
   rightPokemon.value = pokemon;
 };
 
