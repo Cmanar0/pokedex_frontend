@@ -1,14 +1,10 @@
-FROM node:18-alpine
+FROM node:18-bullseye  
 
 WORKDIR /app
 
 COPY package*.json ./
-
-ENV npm_config_optional=false
 RUN npm install
 
 COPY . .
 
-EXPOSE 5173
-
-CMD ["npx", "vite", "--host"]
+CMD ["npm", "run", "dev"]
