@@ -17,13 +17,22 @@
     </nav>
 
     <main class="dashboard-content">
-      <div class="welcome-card">
-        <h2>Welcome, {{ authStore.currentUser?.username || 'Trainer' }}!</h2>
-        <p>Explore Pokémon, types, and abilities using the tools below.</p>
+      <div class="view-selector">
+        <button
+          @click="activeView = 'all'"
+          :class="['view-button', { active: activeView === 'all' }]"
+        >
+          All Pokémon
+        </button>
+        <button
+          @click="activeView = 'favorites'"
+          :class="['view-button', { active: activeView === 'favorites' }]"
+        >
+          Favorite Pokémon
+        </button>
       </div>
 
-      <!-- Inject your new ListMenu component -->
-      <ListMenu />
+      <component :is="activeView === 'all' ? AllPokFilter : FavPokFilter" />
     </main>
   </div>
 </template>
@@ -31,10 +40,13 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '../stores/auth';
-import ListMenu from '../components/ListMenu.vue';
+import { ref } from 'vue';
+import AllPokFilter from '../components/AllPokFilter.vue';
+import FavPokFilter from '../components/FavPokFilter.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const activeView = ref('all');
 
 const handleLogout = async () => {
   await authStore.logout();
@@ -127,5 +139,39 @@ const handleLogout = async () => {
   to {
     transform: rotate(360deg);
   }
+}
+
+.view-selector {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.view-button {
+  padding: 0.75rem 1.5rem;
+  background-color: white;
+  color: var(--neutral-700);
+  border: 2px solid var(--neutral-300);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+}
+
+.view-button:hover {
+  background-color: var(--neutral-100);
+  border-color: var(--neutral-400);
+}
+
+.view-button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.view-button.active:hover {
+  background-color: var(--primary-color-dark);
+  border-color: var(--primary-color-dark);
 }
 </style>

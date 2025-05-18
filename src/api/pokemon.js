@@ -25,3 +25,11 @@ export const getFavoritePokemonList = (params = {}) => {
     },
   });
 };
+
+export const getTypes = () => {
+  return apiService.get('/types/');
+};
+
+export const getAbilities = () => {
+  return apiService.get('/abilities/');
+};

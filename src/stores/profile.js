@@ -26,6 +26,7 @@ export const useProfileStore = defineStore('profile', {
       
       try {
         const response = await getUserProfile();
+        console.log('Fetched profile:', response);
         this.favoritePokemon = response.user.profile.favorite_pokemon;
       } catch (err) {
         this.error = err.message || 'Failed to fetch profile';
