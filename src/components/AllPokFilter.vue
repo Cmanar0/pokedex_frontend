@@ -54,6 +54,7 @@
       :search-query="searchQuery"
       :selected-type="selectedType"
       :selected-ability="selectedAbility"
+      :is-comparison-mode="false"
     />
   </div>
 </template>

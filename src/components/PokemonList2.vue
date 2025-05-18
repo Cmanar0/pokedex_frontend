@@ -73,8 +73,19 @@
             <button class="btn btn-primary btn-sm" @click.stop="viewDetails(pokemon)">
               <i class="bi bi-info-circle"></i> See Details
             </button>
-            <button class="btn btn-secondary btn-sm" @click.stop="comparePokemon(pokemon)">
+            <button 
+              v-if="!isComparisonMode"
+              class="btn btn-secondary btn-sm" 
+              @click.stop="comparePokemon(pokemon)"
+            >
               <i class="bi bi-arrow-left-right"></i> Compare
+            </button>
+            <button 
+              v-else
+              class="btn btn-secondary btn-sm" 
+              @click.stop="handleSelect(pokemon)"
+            >
+              <i class="bi bi-check-circle"></i> Select
             </button>
           </div>
         </div>
@@ -91,17 +102,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, nextTick } from 'vue';
+import { ref, onMounted, watch, nextTick, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getPokemonList } from '../api/pokemon';
+import { useProfileStore } from '../stores/profile';
+import { useAuthStore } from '../stores/auth';
 
 const router = useRouter();
+const profileStore = useProfileStore();
+const authStore = useAuthStore();
 
 const props = defineProps({
   searchQuery: String,
   selectedType: String,
   selectedAbility: String,
   currentPage: Number,
+  isComparisonMode: {
+    type: Boolean,
+    default: false
+  }
 });
 
 const emit = defineEmits(['update:currentPage', 'update:pokemons', 'view-details', 'compare', 'toggle-favorite']);
@@ -111,6 +130,8 @@ const isLoading = ref(false);
 const error = ref(null);
 const pokemons = ref([]);
 const lastScrollPosition = ref(0);
+
+const isAuthenticated = computed(() => authStore.isAuthenticated);
 
 const refreshPokemonList = async () => {
   isLoading.value = true;
@@ -183,12 +204,20 @@ const handleScroll = (event) => {
 };
 
 const isFavorite = (pokemonName) => {
-  const favorites = JSON.parse(localStorage.getItem('favoritePokemon') || '[]');
-  return favorites.includes(pokemonName);
+  return profileStore.isFavorite(pokemonName);
 };
 
-const toggleFavorite = (pokemon) => {
-  emit('toggle-favorite', pokemon);
+const toggleFavorite = async (pokemon) => {
+  if (!isAuthenticated.value) {
+    router.push('/login');
+    return;
+  }
+  
+  try {
+    await profileStore.toggleFavorite(pokemon.name);
+  } catch (err) {
+    console.error('Failed to update favorites:', err);
+  }
 };
 
 const viewDetails = (pokemon) => {
@@ -202,6 +231,10 @@ const comparePokemon = (pokemon) => {
   });
 };
 
+const handleSelect = (pokemon) => {
+  console.log('Selected Pokémon for comparison:', pokemon.name);
+};
+
 // Watch for filter changes
 watch(
   [() => props.searchQuery, () => props.selectedType, () => props.selectedAbility],
@@ -210,8 +243,11 @@ watch(
   }
 );
 
-onMounted(() => {
+onMounted(async () => {
   refreshPokemonList();
+  if (isAuthenticated.value) {
+    await profileStore.fetchProfile();
+  }
   // Initial check for scroll position
   if (listContainer.value) {
     const container = listContainer.value;
@@ -346,9 +382,19 @@ onMounted(() => {
 
 .pokemon-actions {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   justify-content: center;
   margin-top: auto;
+  width: 100%;
+}
+
+.pokemon-actions .btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .favorite-button {
@@ -379,6 +425,11 @@ onMounted(() => {
 .favorite-button.is-favorite {
   color: var(--error);
   background: var(--error-light);
+}
+
+.favorite-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .favorite-button i {
